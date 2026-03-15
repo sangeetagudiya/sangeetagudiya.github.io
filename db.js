@@ -1,17 +1,26 @@
 /**
  * ╔══════════════════════════════════════════════════════════╗
- *  VIDYAM — Data Service Layer
- *  Primary:  Google Sheets (singhmohal@gmail.com)
- *  Fallback: localStorage (works offline, auto-syncs)
+ *  VIDYAM — Data Service Layer v2
+ *  Primary  : Firebase Firestore (vidyam-e2567)
+ *  Fallback : localStorage (offline support + auto-sync)
+ *  Account  : singhmohal@gmail.com
  * ╚══════════════════════════════════════════════════════════╝
  */
 
 const DB = window.DB = (() => {
 
-  // ── CONFIG ────────────────────────────────────────────────
-  const API = 'https://script.google.com/macros/s/AKfycbz5eWyW7S2Bsq2qef_FyBCZtEM1cJywqmFL___LTi5CKmYV-7U617YyYS1PEC1D9iQV/exec';
+  // ── FIREBASE CONFIG ───────────────────────────────────────
+  const FIREBASE_CONFIG = {
+    apiKey:            "AIzaSyDL0W1VzjJjaL8088lrnZ3J613Ya6-YKbw",
+    authDomain:        "vidyam-e2567.firebaseapp.com",
+    projectId:         "vidyam-e2567",
+    storageBucket:     "vidyam-e2567.firebasestorage.app",
+    messagingSenderId: "239816985208",
+    appId:             "1:239816985208:web:76cacc443149627368fb8d",
+  };
 
-  const CLASS_ORDER   = ['class6','class7','class8','class9','class10'];
+  // ── CONSTANTS ─────────────────────────────────────────────
+  const CLASS_ORDER = ['class6','class7','class8','class9','class10'];
   const CLASSES_DEFAULT = {
     class6:  { name: 'Class 6',  students: [] },
     class7:  { name: 'Class 7',  students: [] },
@@ -21,76 +30,135 @@ const DB = window.DB = (() => {
   };
   const CREDS_DEFAULT = { username: 'Devasangeeta', password: 'sangeeta@99' };
 
+  // ── FIRESTORE REST API BASE ───────────────────────────────
+  // We use Firestore REST API directly — no npm needed, works in plain HTML
+  const FS_BASE = `https://firestore.googleapis.com/v1/projects/${FIREBASE_CONFIG.projectId}/databases/(default)/documents`;
+
   // ── LOCAL STORAGE HELPERS ─────────────────────────────────
   function ls(k)       { try { return JSON.parse(localStorage.getItem(k)); } catch(e) { return null; } }
   function lsSet(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch(e) {} }
 
-  // ── OFFLINE QUEUE ─────────────────────────────────────────
-  // Any write that fails while offline gets queued and retried
-  function enqueue(action, payload) {
-    const q = ls('vs_sync_queue') || [];
-    q.push({ action, payload, ts: Date.now() });
-    lsSet('vs_sync_queue', q);
+  // ── OFFLINE SYNC QUEUE ────────────────────────────────────
+  function enqueue(fn, args) {
+    const q = ls('vs_queue') || [];
+    q.push({ fn, args, ts: Date.now() });
+    lsSet('vs_queue', q);
   }
   async function flushQueue() {
-    const q = ls('vs_sync_queue') || [];
+    const q = ls('vs_queue') || [];
     if (!q.length) return;
-    const remaining = [];
+    const failed = [];
     for (const item of q) {
       try {
-        await apiPost(item.action, item.payload);
+        await WRITE_FNS[item.fn](...item.args);
       } catch(e) {
-        remaining.push(item);
+        failed.push(item);
       }
     }
-    lsSet('vs_sync_queue', remaining);
+    lsSet('vs_queue', failed);
+  }
+  window.addEventListener('online', () => setTimeout(flushQueue, 1000));
+
+  // ── FIRESTORE REST HELPERS ────────────────────────────────
+  // Convert JS value to Firestore field value
+  function toFS(val) {
+    if (val === null || val === undefined) return { nullValue: null };
+    if (typeof val === 'boolean') return { booleanValue: val };
+    if (typeof val === 'number')  return { integerValue: String(val) };
+    if (typeof val === 'string')  return { stringValue: val };
+    if (Array.isArray(val))       return { arrayValue: { values: val.map(toFS) } };
+    if (typeof val === 'object')  return { mapValue: { fields: objToFS(val) } };
+    return { stringValue: String(val) };
+  }
+  function objToFS(obj) {
+    const fields = {};
+    for (const k in obj) {
+      if (obj.hasOwnProperty(k)) fields[k] = toFS(obj[k]);
+    }
+    return fields;
   }
 
-  // ── API HELPERS ───────────────────────────────────────────
-  async function apiGet(action, params = {}) {
-    const qs = new URLSearchParams({ action, ...params }).toString();
-    const res = await fetch(`${API}?${qs}`);
-    const json = await res.json();
-    if (!json.success) throw new Error(json.data?.error || 'API error');
-    return json.data;
+  // Convert Firestore field value to JS value
+  function fromFS(val) {
+    if (!val) return null;
+    if ('nullValue'    in val) return null;
+    if ('booleanValue' in val) return val.booleanValue;
+    if ('integerValue' in val) return Number(val.integerValue);
+    if ('doubleValue'  in val) return val.doubleValue;
+    if ('stringValue'  in val) return val.stringValue;
+    if ('arrayValue'   in val) return (val.arrayValue.values || []).map(fromFS);
+    if ('mapValue'     in val) return fsToObj(val.mapValue.fields || {});
+    return null;
+  }
+  function fsToObj(fields) {
+    const obj = {};
+    for (const k in fields) obj[k] = fromFS(fields[k]);
+    return obj;
   }
 
-  async function apiPost(action, body = {}) {
-    const res = await fetch(API, {
-      method: 'POST',
-      body: JSON.stringify({ action, ...body }),
+  // GET a document
+  async function fsGet(path) {
+    const res = await fetch(`${FS_BASE}/${path}`);
+    if (res.status === 404) return null;
+    if (!res.ok) throw new Error(`Firestore GET failed: ${res.status}`);
+    const doc = await res.json();
+    return doc.fields ? fsToObj(doc.fields) : null;
+  }
+
+  // SET (create/overwrite) a document
+  async function fsSet(path, data) {
+    const body = { fields: objToFS(data) };
+    const res = await fetch(`${FS_BASE}/${path}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
     });
-    const json = await res.json();
-    if (!json.success) throw new Error(json.data?.error || 'API error');
-    return json.data;
+    if (!res.ok) throw new Error(`Firestore SET failed: ${res.status}`);
+    return true;
   }
 
-  function isOnline() { return navigator.onLine; }
+  // DELETE a document
+  async function fsDelete(path) {
+    const res = await fetch(`${FS_BASE}/${path}`, { method: 'DELETE' });
+    if (!res.ok && res.status !== 404) throw new Error(`Firestore DELETE failed: ${res.status}`);
+    return true;
+  }
 
-  // Flush queue whenever connection is restored
-  window.addEventListener('online', () => {
-    flushQueue();
-  });
+  // LIST documents in a collection
+  async function fsList(collection) {
+    const res = await fetch(`${FS_BASE}/${collection}`);
+    if (!res.ok) return [];
+    const json = await res.json();
+    if (!json.documents) return [];
+    return json.documents.map(doc => ({
+      id: doc.name.split('/').pop(),
+      ...fsToObj(doc.fields || {}),
+    }));
+  }
 
   // ── AUTH ──────────────────────────────────────────────────
-  function getCreds()        { return ls('vs_creds') || CREDS_DEFAULT; }
-  function saveCreds(u, p)   { lsSet('vs_creds', { username: u, password: p }); }
-  function isLoggedIn()      { return !!sessionStorage.getItem('vs_auth'); }
-  function setLoggedIn()     { sessionStorage.setItem('vs_auth', '1'); }
-  function logout()          { sessionStorage.removeItem('vs_auth'); }
+  function getCreds()      { return ls('vs_creds') || CREDS_DEFAULT; }
+  function saveCreds(u, p) { lsSet('vs_creds', { username: u, password: p }); }
+  function isLoggedIn()    { return !!sessionStorage.getItem('vs_auth'); }
+  function setLoggedIn()   { sessionStorage.setItem('vs_auth', '1'); }
+  function logout()        { sessionStorage.removeItem('vs_auth'); }
 
   // ── THEME ─────────────────────────────────────────────────
-  function getTheme()        { return localStorage.getItem('vs_theme') || 'light'; }
-  function setTheme(t)       { localStorage.setItem('vs_theme', t); }
+  function getTheme()      { return localStorage.getItem('vs_theme') || 'light'; }
+  function setTheme(t)     { localStorage.setItem('vs_theme', t); }
 
-  // ── CLASSES (local only — structure doesn't change) ───────
-  function getClasses()      { return ls('vs_classes') || { ...CLASSES_DEFAULT }; }
-  function _saveClasses(c)   { lsSet('vs_classes', c); }
+  // ── CLASSES ───────────────────────────────────────────────
+  function getClasses()    { return ls('vs_classes') || { ...CLASSES_DEFAULT }; }
+  function _saveClasses(c) { lsSet('vs_classes', c); }
 
   // ── STUDENTS ──────────────────────────────────────────────
   function getStudents(classId) {
     const c = getClasses();
-    return (c[classId] && c[classId].students) ? c[classId].students : [];
+    return (c[classId] && c[classId].students) ? [...c[classId].students] : [];
+  }
+
+  async function _pushStudents(classId, students) {
+    await fsSet(`students/${classId}`, { classId, students });
   }
 
   async function addStudent(classId, name) {
@@ -99,12 +167,10 @@ const DB = window.DB = (() => {
     if (c[classId].students.find(s => s.toLowerCase() === name.toLowerCase())) return false;
     c[classId].students.push(name);
     _saveClasses(c);
-    // Sync to Google Sheets
-    const students = c[classId].students;
     try {
-      await apiPost('saveStudents', { classId, students });
+      await _pushStudents(classId, c[classId].students);
     } catch(e) {
-      enqueue('saveStudents', { classId, students });
+      enqueue('_pushStudents', [classId, c[classId].students]);
     }
     return true;
   }
@@ -114,35 +180,34 @@ const DB = window.DB = (() => {
     if (!c[classId]) return;
     c[classId].students.splice(idx, 1);
     _saveClasses(c);
-    const students = c[classId].students;
     try {
-      await apiPost('saveStudents', { classId, students });
+      await _pushStudents(classId, c[classId].students);
     } catch(e) {
-      enqueue('saveStudents', { classId, students });
+      enqueue('_pushStudents', [classId, c[classId].students]);
     }
   }
 
-  // Load students from Sheets into localStorage (call on app start)
-  async function syncStudentsFromSheets() {
+  async function syncStudentsFromFirebase() {
     try {
       const c = getClasses();
       for (const classId of CLASS_ORDER) {
-        const data = await apiGet('getStudents', { classId });
-        if (data && Array.isArray(data.students)) {
-          c[classId].students = data.students;
+        const doc = await fsGet(`students/${classId}`);
+        if (doc && Array.isArray(doc.students)) {
+          c[classId].students = doc.students;
         }
       }
       _saveClasses(c);
     } catch(e) {
-      // offline — use local data
+      // offline — use local
     }
   }
 
   // ── ATTENDANCE ────────────────────────────────────────────
-  function _attKey(classId, date) { return `vs_att_${classId}_${date}`; }
+  function _attLocalKey(classId, date) { return `vs_att_${classId}_${date}`; }
+  function _attFSPath(classId, date)   { return `attendance/${classId}_${date}`; }
 
   function getAttendance(classId, date) {
-    return ls(_attKey(classId, date)) || { morning: {}, lunch: {} };
+    return ls(_attLocalKey(classId, date)) || { morning: {}, lunch: {} };
   }
 
   async function setAttendanceMark(classId, date, session, studentIdx, value) {
@@ -152,35 +217,37 @@ const DB = window.DB = (() => {
     } else {
       rec[session][studentIdx] = value;
     }
-    lsSet(_attKey(classId, date), rec);
-    // Sync session to Sheets
+    lsSet(_attLocalKey(classId, date), rec);
     try {
-      await apiPost('saveAttendance', { classId, date, session, data: rec[session] });
+      await fsSet(_attFSPath(classId, date), { classId, date, morning: rec.morning, lunch: rec.lunch });
     } catch(e) {
-      enqueue('saveAttendance', { classId, date, session, data: rec[session] });
+      enqueue('_pushAttendance', [classId, date, rec]);
     }
   }
 
   async function markAllAttendance(classId, date, session, value, count) {
     const rec = getAttendance(classId, date);
     for (let i = 0; i < count; i++) rec[session][i] = value;
-    lsSet(_attKey(classId, date), rec);
+    lsSet(_attLocalKey(classId, date), rec);
     try {
-      await apiPost('saveAttendance', { classId, date, session, data: rec[session] });
+      await fsSet(_attFSPath(classId, date), { classId, date, morning: rec.morning, lunch: rec.lunch });
     } catch(e) {
-      enqueue('saveAttendance', { classId, date, session, data: rec[session] });
+      enqueue('_pushAttendance', [classId, date, rec]);
     }
   }
 
+  async function _pushAttendance(classId, date, rec) {
+    await fsSet(_attFSPath(classId, date), { classId, date, morning: rec.morning, lunch: rec.lunch });
+  }
+
   function getDatesWithAttendance(classId) {
-    // Read from localStorage keys
     const dates = [];
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i);
       if (key && key.startsWith(`vs_att_${classId}_`)) {
         const date = key.replace(`vs_att_${classId}_`, '');
         const rec  = ls(key) || {};
-        if (Object.keys(rec.morning || {}).length > 0 || Object.keys(rec.lunch || {}).length > 0) {
+        if (Object.keys(rec.morning||{}).length > 0 || Object.keys(rec.lunch||{}).length > 0) {
           dates.push(date);
         }
       }
@@ -202,17 +269,14 @@ const DB = window.DB = (() => {
     });
   }
 
-  // Load attendance for a date from Sheets (called when switching date)
-  async function syncAttendanceFromSheets(classId, date) {
+  async function syncAttendanceFromFirebase(classId, date) {
     try {
-      const data = await apiGet('getAttendance', { classId, date });
-      if (data) lsSet(_attKey(classId, date), data);
-    } catch(e) {
-      // use local
-    }
+      const doc = await fsGet(_attFSPath(classId, date));
+      if (doc) lsSet(_attLocalKey(classId, date), { morning: doc.morning || {}, lunch: doc.lunch || {} });
+    } catch(e) { /* use local */ }
   }
 
-  // ── PROFILES ─────────────────────────────────────────────
+  // ── PROFILES ──────────────────────────────────────────────
   function getProfiles(classId) {
     const all = ls('vs_profiles') || [];
     return classId ? all.filter(p => p.classId === classId) : all;
@@ -220,50 +284,60 @@ const DB = window.DB = (() => {
 
   async function saveProfile(profile) {
     const all = ls('vs_profiles') || [];
-    if (profile.id) {
-      const idx = all.findIndex(p => p.id === profile.id);
-      if (idx > -1) all[idx] = profile; else all.push(profile);
-    } else {
+    if (!profile.id) {
       profile.id = 'stu_' + Date.now() + '_' + Math.random().toString(36).slice(2,6);
-      all.push(profile);
     }
+    const idx = all.findIndex(p => p.id === profile.id);
+    if (idx > -1) all[idx] = profile; else all.push(profile);
     lsSet('vs_profiles', all);
     try {
-      await apiPost('saveProfile', { profile });
+      await fsSet(`profiles/${profile.id}`, profile);
     } catch(e) {
-      enqueue('saveProfile', { profile });
+      enqueue('_pushProfile', [profile]);
     }
     return profile;
+  }
+
+  async function _pushProfile(profile) {
+    await fsSet(`profiles/${profile.id}`, profile);
   }
 
   async function deleteProfile(id) {
     const all = (ls('vs_profiles') || []).filter(p => p.id !== id);
     lsSet('vs_profiles', all);
     try {
-      await apiPost('deleteProfile', { id });
+      await fsDelete(`profiles/${id}`);
     } catch(e) {
-      enqueue('deleteProfile', { id });
+      enqueue('_deleteProfile', [id]);
     }
   }
 
-  async function syncProfilesFromSheets() {
+  async function _deleteProfile(id) {
+    await fsDelete(`profiles/${id}`);
+  }
+
+  async function syncProfilesFromFirebase() {
     try {
-      const data = await apiGet('getProfiles', {});
-      if (data && Array.isArray(data.profiles)) {
-        lsSet('vs_profiles', data.profiles);
-      }
-    } catch(e) {
-      // use local
-    }
+      const docs = await fsList('profiles');
+      if (docs.length) lsSet('vs_profiles', docs);
+    } catch(e) { /* use local */ }
   }
 
-  // ── PING (test connection) ─────────────────────────────────
+  // ── WRITE FNS MAP (for queue replay) ─────────────────────
+  const WRITE_FNS = {
+    _pushStudents,
+    _pushAttendance,
+    _pushProfile,
+    _deleteProfile,
+  };
+
+  // ── PING ──────────────────────────────────────────────────
   async function ping() {
     try {
-      const data = await apiGet('ping');
-      return data;
+      const res = await fetch(`https://firestore.googleapis.com/v1/projects/${FIREBASE_CONFIG.projectId}/databases/(default)`);
+      return { ok: res.ok };
     } catch(e) {
-      return { ok: false, error: e.toString() };
+      return { ok: false };
     }
   }
 
@@ -276,16 +350,15 @@ const DB = window.DB = (() => {
     // Classes
     getClasses, CLASS_ORDER,
     // Students
-    getStudents, addStudent, removeStudent, syncStudentsFromSheets,
+    getStudents, addStudent, removeStudent, syncStudentsFromFirebase,
     // Attendance
     getAttendance, setAttendanceMark, markAllAttendance,
-    getDatesWithAttendance, getAttendanceReport, syncAttendanceFromSheets,
+    getDatesWithAttendance, getAttendanceReport, syncAttendanceFromFirebase,
     // Profiles
-    getProfiles, saveProfile, deleteProfile, syncProfilesFromSheets,
+    getProfiles, saveProfile, deleteProfile, syncProfilesFromFirebase,
     // Sync
     flushQueue, ping,
-    // Online check
-    isOnline,
+    isOnline: () => navigator.onLine,
   };
 
 })();
