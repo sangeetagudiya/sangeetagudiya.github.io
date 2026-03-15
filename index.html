@@ -3,170 +3,228 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Vidyam — School Management System</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<title>Sangeetam Portal — School Management</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-:root{--tr:background .3s,color .3s,border-color .3s;}
+:root{
+  --tr:background .4s,color .4s,border-color .4s,box-shadow .4s;
+}
 [data-theme="light"]{
-  --bg:#ffffff;--bg2:#f6f8fa;--bg3:#eaeef2;
-  --text:#1f2328;--text2:#656d76;--text3:#9198a1;
-  --border:#d1d9e0;--border2:#afb8c1;
-  --card:#ffffff;--card-hover:#f6f8fa;
-  --nav-bg:rgba(255,255,255,0.95);
-  --btn-primary-bg:#1f2328;--btn-primary-text:#ffffff;
-  --btn-secondary-bg:#f6f8fa;--btn-secondary-text:#1f2328;--btn-secondary-border:#d1d9e0;
-  --accent:#0969da;--accent-bg:#ddf4ff;
-  --green:#1a7f37;--green-bg:#dafbe1;
-  --toggle-bg:#eaeef2;
-  --shadow:0 1px 3px rgba(31,35,40,0.12);
-  --shadow-md:0 3px 12px rgba(31,35,40,0.12);
+  --bg:#ffffff;--bg2:#f7f7f5;--bg3:#efefec;
+  --text:#0a0a0a;--text2:#6b7280;--text3:#9ca3af;
+  --border:rgba(0,0,0,0.08);--border2:rgba(0,0,0,0.14);
+  --card:#ffffff;--card-hover:#fafaf8;
+  --nav-bg:rgba(255,255,255,0.92);
+  --btn-primary:#0a0a0a;--btn-primary-text:#ffffff;
+  --btn-ghost-text:#6b7280;--btn-ghost-border:rgba(0,0,0,0.14);
+  --particle-color:rgba(0,0,0,0.12);
+  --bar-color:rgba(0,0,0,0.06);
+  --shadow:0 1px 4px rgba(0,0,0,0.08);
+  --shadow-md:0 4px 20px rgba(0,0,0,0.1);
+  --shadow-lg:0 8px 40px rgba(0,0,0,0.12);
+  --accent:#2563eb;--accent-bg:#eff6ff;
+  --green:#16a34a;--green-bg:#f0fdf4;
+  --toggle-bg:#f3f4f6;
 }
 [data-theme="dark"]{
-  --bg:#0d1117;--bg2:#161b22;--bg3:#21262d;
-  --text:#e6edf3;--text2:#8b949e;--text3:#6e7681;
-  --border:#30363d;--border2:#484f58;
-  --card:#161b22;--card-hover:#1c2128;
-  --nav-bg:rgba(13,17,23,0.95);
-  --btn-primary-bg:#f0f6fc;--btn-primary-text:#0d1117;
-  --btn-secondary-bg:#21262d;--btn-secondary-text:#c9d1d9;--btn-secondary-border:#30363d;
-  --accent:#58a6ff;--accent-bg:#121d2f;
-  --green:#3fb950;--green-bg:#12261e;
-  --toggle-bg:#21262d;
-  --shadow:0 1px 3px rgba(0,0,0,0.4);
-  --shadow-md:0 3px 12px rgba(0,0,0,0.4);
+  --bg:#0a0a0a;--bg2:#111111;--bg3:#1a1a1a;
+  --text:#f5f5f5;--text2:#a3a3a3;--text3:#6b7280;
+  --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.13);
+  --card:#111111;--card-hover:#161616;
+  --nav-bg:rgba(10,10,10,0.92);
+  --btn-primary:#f5f5f5;--btn-primary-text:#0a0a0a;
+  --btn-ghost-text:#a3a3a3;--btn-ghost-border:rgba(255,255,255,0.12);
+  --particle-color:rgba(255,255,255,0.15);
+  --bar-color:rgba(255,255,255,0.06);
+  --shadow:0 1px 4px rgba(0,0,0,0.4);
+  --shadow-md:0 4px 20px rgba(0,0,0,0.5);
+  --shadow-lg:0 8px 40px rgba(0,0,0,0.6);
+  --accent:#60a5fa;--accent-bg:#172554;
+  --green:#4ade80;--green-bg:#052e16;
+  --toggle-bg:#1f2937;
 }
 *{box-sizing:border-box;margin:0;padding:0;}
 html{scroll-behavior:smooth;}
-body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;transition:var(--tr);overflow-x:hidden;font-size:14px;line-height:1.5;}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;font-size:14px;line-height:1.5;transition:var(--tr);}
+
+/* CANVAS */
+#bg-canvas{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.7;transition:opacity .4s;}
 
 /* NAV */
-nav{position:fixed;top:0;left:0;right:0;z-index:100;background:var(--nav-bg);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);transition:var(--tr);}
-.nav-inner{max-width:1200px;margin:0 auto;padding:0 24px;height:56px;display:flex;align-items:center;justify-content:space-between;gap:16px;}
-.nav-logo{display:flex;align-items:center;gap:10px;text-decoration:none;}
-.nav-logo-mark{width:28px;height:28px;background:var(--text);border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-.nav-logo-mark svg{width:16px;height:16px;fill:var(--bg);}
-.nav-logo-text{font-size:15px;font-weight:700;color:var(--text);letter-spacing:-0.3px;}
-.nav-links{display:flex;align-items:center;gap:4px;}
-.nav-links a{font-size:13px;font-weight:500;color:var(--text2);text-decoration:none;padding:6px 10px;border-radius:6px;transition:color .15s,background .15s;}
+nav{position:fixed;top:0;left:0;right:0;z-index:200;background:var(--nav-bg);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid var(--border);transition:var(--tr);}
+.nav-inner{max-width:1200px;margin:0 auto;padding:0 32px;height:60px;display:flex;align-items:center;justify-content:space-between;gap:16px;}
+.nav-logo{display:flex;align-items:center;gap:10px;text-decoration:none;transition:opacity .2s;}
+.nav-logo:hover{opacity:.7;}
+.nav-logo-mark{width:30px;height:30px;background:var(--text);border-radius:7px;display:flex;align-items:center;justify-content:center;transition:background .4s;}
+.nav-logo-mark svg{width:16px;height:16px;fill:var(--bg);transition:fill .4s;}
+.nav-logo-text{font-size:15px;font-weight:800;color:var(--text);letter-spacing:-0.5px;transition:color .4s;}
+.nav-links{display:flex;gap:2px;}
+.nav-links a{font-size:13px;font-weight:400;color:var(--text2);text-decoration:none;padding:7px 12px;border-radius:7px;transition:all .2s;}
 .nav-links a:hover{color:var(--text);background:var(--bg2);}
 .nav-right{display:flex;align-items:center;gap:8px;}
-.theme-btn{width:32px;height:32px;border-radius:6px;border:1px solid var(--border);background:var(--toggle-bg);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:var(--tr);}
-.theme-btn svg{width:15px;height:15px;fill:var(--text2);}
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;font-family:'Inter',sans-serif;font-size:13px;font-weight:500;border-radius:6px;cursor:pointer;text-decoration:none;transition:all .15s;white-space:nowrap;border:1px solid transparent;}
-.btn-sm{padding:5px 12px;font-size:12px;}
-.btn-md{padding:7px 16px;}
-.btn-lg{padding:10px 20px;font-size:14px;}
-.btn-primary{background:var(--btn-primary-bg);color:var(--btn-primary-text);border-color:var(--btn-primary-bg);}
-.btn-primary:hover{opacity:.88;}
-.btn-secondary{background:var(--btn-secondary-bg);color:var(--btn-secondary-text);border-color:var(--btn-secondary-border);}
-.btn-secondary:hover{background:var(--bg3);border-color:var(--border2);}
+/* Theme toggle button */
+.theme-toggle-btn{
+  display:flex;align-items:center;gap:6px;
+  background:var(--toggle-bg);border:1px solid var(--border2);
+  border-radius:8px;padding:6px 12px;cursor:pointer;
+  font-family:'Inter',sans-serif;font-size:12px;font-weight:500;
+  color:var(--text2);transition:all .2s;white-space:nowrap;
+}
+.theme-toggle-btn:hover{color:var(--text);border-color:var(--border2);}
+.theme-toggle-btn svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:1.5;flex-shrink:0;}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;font-family:'Inter',sans-serif;font-size:13px;font-weight:500;border-radius:8px;cursor:pointer;text-decoration:none;transition:all .2s;white-space:nowrap;border:1px solid transparent;}
+.btn-sm{padding:6px 14px;}
+.btn-primary{background:var(--btn-primary);color:var(--btn-primary-text);border-color:var(--btn-primary);}
+.btn-primary:hover{opacity:.85;transform:translateY(-1px);}
+.btn-ghost{background:transparent;color:var(--btn-ghost-text);border-color:var(--btn-ghost-border);}
+.btn-ghost:hover{color:var(--text);border-color:var(--border2);}
+.btn-lg{padding:13px 28px;font-size:15px;font-weight:600;border-radius:10px;}
+.btn-xl{padding:16px 36px;font-size:16px;font-weight:700;border-radius:12px;}
 
 /* HERO */
-.hero{padding:120px 24px 80px;text-align:center;max-width:1200px;margin:0 auto;}
-.hero-badge{display:inline-flex;align-items:center;gap:6px;background:var(--green-bg);border:1px solid var(--green);color:var(--green);border-radius:20px;padding:4px 12px;font-size:12px;font-weight:600;margin-bottom:24px;animation:fadeUp .5s ease both;}
-.hero-badge-dot{width:6px;height:6px;border-radius:50%;background:var(--green);}
-.hero h1{font-size:clamp(36px,5vw,64px);font-weight:700;letter-spacing:-1.5px;color:var(--text);line-height:1.1;max-width:800px;margin:0 auto 20px;animation:fadeUp .5s .05s ease both;}
-.hero-sub{font-size:clamp(15px,2vw,18px);color:var(--text2);max-width:520px;margin:0 auto 36px;line-height:1.7;font-weight:400;animation:fadeUp .5s .1s ease both;}
-.hero-btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;animation:fadeUp .5s .15s ease both;}
+.hero{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:110px 24px 80px;text-align:center;position:relative;z-index:1;}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;background:var(--green-bg);border:1px solid rgba(22,163,74,0.2);border-radius:24px;padding:6px 16px;font-size:12px;font-weight:600;color:var(--green);margin-bottom:36px;animation:fadeUp .6s ease both;}
+[data-theme="dark"] .hero-badge{border-color:rgba(74,222,128,0.2);}
+.badge-pulse{width:7px;height:7px;border-radius:50%;background:var(--green);animation:pulse 2s ease-in-out infinite;}
+@keyframes pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.4);opacity:.6}}
+
+.hero-welcome{font-size:clamp(13px,2vw,16px);font-weight:500;color:var(--text3);margin-bottom:12px;letter-spacing:2px;text-transform:uppercase;animation:fadeUp .6s .05s ease both;}
+
+.hero-title{font-size:clamp(44px,7vw,90px);font-weight:800;letter-spacing:-3px;color:var(--text);line-height:1.02;max-width:900px;min-height:clamp(54px,8.5vw,108px);animation:fadeUp .6s .1s ease both;transition:color .4s;}
+.typing-cursor{display:inline-block;width:4px;background:var(--text);border-radius:2px;animation:cursorBlink .8s step-end infinite;vertical-align:middle;margin-left:4px;transition:background .4s;}
+@keyframes cursorBlink{0%,100%{opacity:1}50%{opacity:0}}
+
+.hero-sub{font-size:clamp(15px,2vw,19px);color:var(--text2);max-width:540px;margin:28px auto 52px;line-height:1.75;font-weight:300;animation:fadeUp .6s .2s ease both;transition:color .4s;}
+
+.hero-btns{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;animation:fadeUp .6s .3s ease both;}
+
+/* SCROLL INDICATOR */
+.scroll-indicator{position:absolute;bottom:40px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:8px;animation:fadeUp .6s .5s ease both;}
+.scroll-mouse{width:22px;height:36px;border:2px solid var(--border2);border-radius:12px;display:flex;justify-content:center;padding-top:6px;}
+.scroll-dot{width:3px;height:7px;background:var(--text3);border-radius:2px;animation:scrollDown 1.6s ease infinite;}
+@keyframes scrollDown{0%{transform:translateY(0);opacity:1}100%{transform:translateY(10px);opacity:0}}
+.scroll-text{font-size:11px;color:var(--text3);font-weight:500;letter-spacing:1px;text-transform:uppercase;}
+
+/* NIGHT SUGGESTION */
+#night-suggestion{
+  position:fixed;bottom:28px;right:24px;z-index:300;
+  background:var(--card);border:1px solid var(--border2);
+  border-radius:14px;padding:16px 18px;
+  max-width:300px;box-shadow:var(--shadow-lg);
+  display:none;
+  animation:slideInRight .4s cubic-bezier(0.34,1.3,0.64,1) both;
+  transition:var(--tr);
+}
+#night-suggestion.show{display:flex;gap:12px;align-items:flex-start;}
+.ns-icon{width:36px;height:36px;border-radius:9px;background:var(--bg2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:18px;}
+.ns-content h4{font-size:13px;font-weight:700;color:var(--text);margin-bottom:3px;}
+.ns-content p{font-size:12px;color:var(--text2);line-height:1.5;margin-bottom:10px;}
+.ns-btns{display:flex;gap:6px;}
+.ns-close{position:absolute;top:10px;right:10px;background:none;border:none;cursor:pointer;color:var(--text3);font-size:16px;line-height:1;padding:2px;transition:color .15s;}
+.ns-close:hover{color:var(--text);}
+@keyframes slideInRight{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
 
 /* STATS */
-.stats{border-top:1px solid var(--border);border-bottom:1px solid var(--border);background:var(--bg2);padding:24px;margin-top:64px;transition:var(--tr);}
-.stats-inner{max-width:1200px;margin:0 auto;display:flex;justify-content:center;gap:64px;flex-wrap:wrap;}
-.stat{text-align:center;}
-.stat-n{font-size:24px;font-weight:700;color:var(--text);letter-spacing:-0.5px;}
-.stat-l{font-size:12px;color:var(--text3);margin-top:2px;font-weight:500;}
+.stats-section{border-top:1px solid var(--border);border-bottom:1px solid var(--border);background:var(--bg2);padding:32px;position:relative;z-index:1;transition:var(--tr);}
+.stats-inner{max-width:1200px;margin:0 auto;display:flex;justify-content:center;gap:80px;flex-wrap:wrap;}
+.stat{text-align:center;animation:fadeUp .5s ease both;}
+.stat:nth-child(1){animation-delay:.1s}.stat:nth-child(2){animation-delay:.2s}.stat:nth-child(3){animation-delay:.3s}.stat:nth-child(4){animation-delay:.4s}
+.stat-n{font-size:28px;font-weight:800;color:var(--text);letter-spacing:-1px;transition:color .4s;}
+.stat-l{font-size:12px;color:var(--text3);margin-top:4px;font-weight:500;}
 
-/* SECTION */
-.section{padding:80px 24px;max-width:1200px;margin:0 auto;}
-.section-label{font-size:12px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--text3);margin-bottom:12px;}
-.section-title{font-size:clamp(24px,3vw,36px);font-weight:700;letter-spacing:-0.8px;color:var(--text);max-width:560px;line-height:1.2;}
-.section-sub{font-size:14px;color:var(--text2);max-width:440px;line-height:1.7;margin-top:10px;}
-.section-head{margin-bottom:40px;}
-.section-alt{background:var(--bg2);border-top:1px solid var(--border);border-bottom:1px solid var(--border);}
-.section-alt .section{padding:80px 24px;}
+/* SECTIONS */
+.section{padding:96px 32px;position:relative;z-index:1;transition:background .4s;}
+.section-alt{background:var(--bg2);}
+.section-inner{max-width:1200px;margin:0 auto;}
+.eyebrow{font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3);margin-bottom:14px;}
+.sec-title{font-size:clamp(28px,4vw,48px);font-weight:800;letter-spacing:-1.5px;color:var(--text);max-width:580px;line-height:1.1;transition:color .4s;}
+.sec-sub{font-size:15px;color:var(--text2);max-width:460px;line-height:1.75;margin-top:14px;font-weight:300;transition:color .4s;}
+.sec-head{margin-bottom:52px;}
 
 /* FEATURE GRID */
-.feat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);border:1px solid var(--border);border-radius:8px;overflow:hidden;}
-.feat-card{background:var(--card);padding:24px;transition:background .15s;}
-.feat-card:hover{background:var(--card-hover);}
-.feat-icon{width:32px;height:32px;border-radius:6px;background:var(--bg2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;margin-bottom:14px;}
-.feat-icon svg{width:16px;height:16px;stroke:var(--text2);fill:none;stroke-width:1.5;}
-.feat-card h3{font-size:14px;font-weight:600;color:var(--text);margin-bottom:6px;}
-.feat-card p{font-size:13px;color:var(--text2);line-height:1.6;}
+.feat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);border:1px solid var(--border);border-radius:14px;overflow:hidden;}
+.feat-card{background:var(--card);padding:28px 24px;transition:all .25s;cursor:default;}
+.feat-card:hover{background:var(--card-hover);transform:scale(1.01);}
+.feat-icon{width:38px;height:38px;border-radius:9px;background:var(--bg2);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;margin-bottom:16px;transition:all .2s;}
+.feat-card:hover .feat-icon{transform:scale(1.1);}
+.feat-icon svg{width:18px;height:18px;stroke:var(--text2);fill:none;stroke-width:1.5;}
+.feat-card h3{font-size:14px;font-weight:700;color:var(--text);margin-bottom:8px;transition:color .4s;}
+.feat-card p{font-size:13px;color:var(--text2);line-height:1.65;transition:color .4s;}
 
 /* MODULE GRID */
-.mod-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:40px;}
-.mod-card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:20px;cursor:pointer;text-decoration:none;display:flex;flex-direction:column;gap:10px;transition:border-color .15s,background .15s,box-shadow .15s;}
-.mod-card:hover{border-color:var(--border2);box-shadow:var(--shadow-md);background:var(--card-hover);}
-.mod-card-top{display:flex;align-items:center;justify-content:space-between;}
-.mod-card-left{display:flex;align-items:center;gap:10px;}
-.mod-card-icon{width:36px;height:36px;border-radius:6px;background:var(--bg2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;}
-.mod-card-icon svg{width:16px;height:16px;stroke:var(--text2);fill:none;stroke-width:1.5;}
-.mod-card-title{font-size:14px;font-weight:600;color:var(--text);}
-.mod-card-arrow{color:var(--text3);font-size:14px;transition:transform .15s;}
-.mod-card:hover .mod-card-arrow{transform:translate(2px,-2px);color:var(--accent);}
-.mod-card-desc{font-size:13px;color:var(--text2);line-height:1.6;}
+.mod-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:52px;}
+.mod-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:24px 22px;cursor:pointer;text-decoration:none;display:flex;flex-direction:column;gap:12px;transition:all .3s;position:relative;overflow:hidden;}
+.mod-card::before{content:'';position:absolute;top:0;left:-100%;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--accent),transparent);transition:left .4s;}
+.mod-card:hover{border-color:var(--border2);box-shadow:var(--shadow-md);transform:translateY(-3px);}
+.mod-card:hover::before{left:100%;}
+.mod-top{display:flex;align-items:center;justify-content:space-between;}
+.mod-left{display:flex;align-items:center;gap:12px;}
+.mod-icon{width:40px;height:40px;border-radius:9px;background:var(--bg2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;transition:all .2s;}
+.mod-card:hover .mod-icon{transform:scale(1.08);}
+.mod-icon svg{width:18px;height:18px;stroke:var(--text2);fill:none;stroke-width:1.5;}
+.mod-title{font-size:15px;font-weight:700;color:var(--text);transition:color .4s;}
+.mod-arr{color:var(--text3);font-size:16px;transition:all .25s;}
+.mod-card:hover .mod-arr{transform:translate(4px,-4px);color:var(--accent);}
+.mod-desc{font-size:13px;color:var(--text2);line-height:1.65;transition:color .4s;}
 .mod-tags{display:flex;gap:6px;flex-wrap:wrap;}
-.mod-tag{background:var(--bg2);border:1px solid var(--border);border-radius:20px;padding:2px 10px;font-size:11px;color:var(--text3);font-weight:500;}
+.mod-tag{background:var(--bg2);border:1px solid var(--border);border-radius:20px;padding:3px 11px;font-size:11px;color:var(--text3);font-weight:500;transition:var(--tr);}
 
 /* QUOTE */
-.quote-section{padding:80px 24px;text-align:center;}
-.quote-inner{max-width:600px;margin:0 auto;}
-.quote-text{font-size:clamp(18px,2.5vw,26px);font-weight:600;color:var(--text);letter-spacing:-0.5px;line-height:1.4;}
-.quote-attr{font-size:13px;color:var(--text3);margin-top:16px;font-weight:500;}
+.quote-sec{padding:96px 32px;text-align:center;position:relative;z-index:1;}
+.quote-inner{max-width:640px;margin:0 auto;}
+.quote-line{width:1px;height:52px;background:linear-gradient(to bottom,transparent,var(--border2),transparent);margin:0 auto 36px;}
+.quote-text{font-size:clamp(20px,3vw,32px);font-weight:700;color:var(--text);letter-spacing:-0.8px;line-height:1.4;transition:color .4s;}
+.quote-attr{font-size:13px;color:var(--text3);margin-top:20px;font-weight:500;}
 
 /* FOOTER */
-footer{border-top:1px solid var(--border);padding:40px 24px 24px;background:var(--bg2);transition:var(--tr);}
+footer{border-top:1px solid var(--border);padding:52px 32px 28px;background:var(--bg2);position:relative;z-index:1;transition:var(--tr);}
 .ft-inner{max-width:1200px;margin:0 auto;}
-.ft-top{display:flex;justify-content:space-between;gap:32px;flex-wrap:wrap;margin-bottom:32px;}
-.ft-brand h2{font-size:15px;font-weight:700;color:var(--text);margin-bottom:6px;letter-spacing:-0.3px;}
-.ft-brand p{font-size:13px;color:var(--text3);max-width:220px;line-height:1.6;}
-.ft-cols{display:flex;gap:48px;flex-wrap:wrap;}
-.ft-col h4{font-size:11px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:var(--text3);margin-bottom:10px;}
-.ft-col a{display:block;font-size:13px;color:var(--text2);text-decoration:none;margin-bottom:7px;transition:color .15s;}
-.ft-col a:hover{color:var(--accent);}
-.ft-bottom{border-top:1px solid var(--border);padding-top:18px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;}
-.ft-bottom p{font-size:12px;color:var(--text3);}
+.ft-top{display:flex;justify-content:space-between;gap:36px;flex-wrap:wrap;margin-bottom:36px;}
+.ft-brand h2{font-size:16px;font-weight:800;color:var(--text);margin-bottom:7px;letter-spacing:-0.5px;transition:color .4s;}
+.ft-brand p{font-size:13px;color:var(--text3);max-width:240px;line-height:1.65;transition:color .4s;}
+.ft-cols{display:flex;gap:52px;flex-wrap:wrap;}
+.ft-col h4{font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text3);margin-bottom:12px;}
+.ft-col a{display:block;font-size:13px;color:var(--text2);text-decoration:none;margin-bottom:8px;transition:color .2s;}
+.ft-col a:hover{color:var(--text);}
+.ft-bottom{border-top:1px solid var(--border);padding-top:20px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;}
+.ft-bottom p{font-size:12px;color:var(--text3);transition:color .4s;}
 
-/* DARK MODE TOAST */
-#dark-toast{
-  position:fixed;bottom:24px;right:24px;z-index:999;
-  background:var(--card);border:1px solid var(--border);
-  border-radius:8px;padding:14px 16px;
-  box-shadow:var(--shadow-md);
-  max-width:300px;width:90vw;
-  display:none;
-  animation:slideIn .3s ease;
-}
-#dark-toast.show{display:flex;gap:12px;align-items:flex-start;}
-.dt-icon{width:32px;height:32px;border-radius:6px;background:var(--bg3);flex-shrink:0;display:flex;align-items:center;justify-content:center;}
-.dt-icon svg{width:16px;height:16px;stroke:var(--text2);fill:none;stroke-width:1.5;}
-.dt-content h4{font-size:13px;font-weight:600;color:var(--text);margin-bottom:3px;}
-.dt-content p{font-size:12px;color:var(--text2);line-height:1.5;}
-.dt-actions{display:flex;gap:6px;margin-top:10px;}
-.dt-close{position:absolute;top:10px;right:10px;background:none;border:none;cursor:pointer;color:var(--text3);font-size:16px;line-height:1;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
 
-@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
-@keyframes slideIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+/* SCROLL REVEAL */
+.reveal{opacity:0;transform:translateY(24px);transition:opacity .6s ease,transform .6s ease;}
+.reveal.visible{opacity:1;transform:translateY(0);}
+.reveal-delay-1{transition-delay:.1s}
+.reveal-delay-2{transition-delay:.2s}
+.reveal-delay-3{transition-delay:.3s}
 
 @media(max-width:900px){.feat-grid{grid-template-columns:1fr 1fr;}}
-@media(max-width:640px){
-  .nav-links{display:none;}
-  .feat-grid{grid-template-columns:1fr;}
-  .mod-grid{grid-template-columns:1fr;}
-  .stats-inner{gap:32px;}
-}
+@media(max-width:640px){.nav-links{display:none;}.feat-grid{grid-template-columns:1fr;}.mod-grid{grid-template-columns:1fr;}.stats-inner{gap:40px;}.section{padding:64px 20px;}.hero{padding:100px 20px 80px;}}
 </style>
 </head>
 <body>
 
+<canvas id="bg-canvas"></canvas>
+
+<!-- NIGHT SUGGESTION -->
+<div id="night-suggestion">
+  <button class="ns-close" onclick="dismissNight()">×</button>
+  <div class="ns-icon">🌙</div>
+  <div class="ns-content">
+    <h4>It's night — protect your eyes</h4>
+    <p>Switch to dark mode for a more comfortable experience.</p>
+    <div class="ns-btns">
+      <button class="btn btn-primary btn-sm" onclick="switchDark()">Switch to Dark Mode</button>
+      <button class="btn btn-ghost btn-sm" onclick="dismissNight()">Dismiss</button>
+    </div>
+  </div>
+</div>
+
 <nav>
   <div class="nav-inner">
     <a class="nav-logo" href="#">
-      <div class="nav-logo-mark">
-        <svg viewBox="0 0 16 16"><path d="M8 1L1 5v6l7 4 7-4V5L8 1zm0 1.5l5.5 3.1v5L8 13.5 2.5 10.6v-5L8 2.5z"/></svg>
-      </div>
-      <span class="nav-logo-text">Vidyam</span>
+      <div class="nav-logo-mark"><svg viewBox="0 0 16 16"><path d="M8 1L1 5v6l7 4 7-4V5L8 1zm0 1.5l5.5 3.1v5L8 13.5 2.5 10.6v-5L8 2.5z"/></svg></div>
+      <span class="nav-logo-text">Sangeetam</span>
     </a>
     <div class="nav-links">
       <a href="#features">Features</a>
@@ -174,216 +232,269 @@ footer{border-top:1px solid var(--border);padding:40px 24px 24px;background:var(
       <a href="#about">About</a>
     </div>
     <div class="nav-right">
-      <button class="theme-btn" id="themeBtn" onclick="toggleTheme()" title="Toggle theme">
-        <svg id="theme-icon-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" stroke-linecap="round"/></svg>
-        <svg id="theme-icon-moon" viewBox="0 0 24 24" style="display:none"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
+      <button class="theme-toggle-btn" id="themeToggleBtn" onclick="toggleTheme()">
+        <svg id="theme-sun" viewBox="0 0 24 24" stroke-linecap="round"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+        <svg id="theme-moon" viewBox="0 0 24 24" style="display:none"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
+        <span id="theme-label">Dark mode</span>
       </button>
-      <a class="btn btn-secondary btn-sm" href="login.html">Sign in</a>
-      <a class="btn btn-primary btn-sm" href="login.html">Open Register</a>
+      <a class="btn btn-ghost btn-sm" href="login.html">Sign in</a>
+      <a class="btn btn-primary btn-sm" href="login.html">Open Portal</a>
     </div>
   </div>
 </nav>
 
-<div class="hero">
-  <div class="hero-badge"><span class="hero-badge-dot"></span>Classes 6–10 · Free Forever</div>
-  <h1>School management,<br>done right.</h1>
-  <p class="hero-sub">Attendance, student records, and reports for Classes 6–10. Secure, fast, and built for daily classroom use.</p>
-  <div class="hero-btns">
-    <a class="btn btn-primary btn-lg" href="login.html">Open Register</a>
-    <a class="btn btn-secondary btn-lg" href="#modules">Explore modules</a>
+<section class="hero">
+  <div class="hero-badge"><span class="badge-pulse"></span>Classes 6–10 · Firebase · Free Forever</div>
+  <div class="hero-welcome">Welcome to</div>
+  <h1 class="hero-title" id="hero-title"><span class="typing-cursor" id="typing-cursor"></span></h1>
+  <p class="hero-sub" id="hero-sub" style="opacity:0">Attendance, student records, and real-time analytics for Classes 6–10. Secure, cloud-backed, and built for daily classroom use.</p>
+  <div class="hero-btns" id="hero-btns" style="opacity:0">
+    <a class="btn btn-primary btn-xl" href="login.html">Open Portal →</a>
+    <a class="btn btn-ghost btn-xl" href="#modules">Explore modules</a>
   </div>
-</div>
+  <div class="scroll-indicator" id="scroll-ind" style="opacity:0">
+    <div class="scroll-mouse"><div class="scroll-dot"></div></div>
+    <span class="scroll-text">Scroll</span>
+  </div>
+</section>
 
-<div class="stats">
+<div class="stats-section reveal">
   <div class="stats-inner">
-    <div class="stat"><div class="stat-n">5</div><div class="stat-l">Classes managed</div></div>
-    <div class="stat"><div class="stat-n">2×</div><div class="stat-l">Daily sessions</div></div>
-    <div class="stat"><div class="stat-n">100%</div><div class="stat-l">Free on GitHub Pages</div></div>
-    <div class="stat"><div class="stat-n">Firebase</div><div class="stat-l">Cloud database</div></div>
+    <div class="stat reveal reveal-delay-1"><div class="stat-n" id="c-students">0</div><div class="stat-l">Students enrolled</div></div>
+    <div class="stat reveal reveal-delay-2"><div class="stat-n">5</div><div class="stat-l">Classes managed</div></div>
+    <div class="stat reveal reveal-delay-3"><div class="stat-n">100%</div><div class="stat-l">Free forever</div></div>
+    <div class="stat reveal"><div class="stat-n">Firebase</div><div class="stat-l">Real-time cloud</div></div>
   </div>
 </div>
 
 <div class="section-alt">
   <div class="section" id="features">
-    <div class="section-head">
-      <div class="section-label">Features</div>
-      <h2 class="section-title">Everything you need to run a class register</h2>
-      <p class="section-sub">Designed for daily use — open it every morning, close it every evening.</p>
-    </div>
-    <div class="feat-grid">
-      <div class="feat-card">
-        <div class="feat-icon"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></div>
-        <h3>Morning & Lunch Attendance</h3>
-        <p>Mark two sessions daily per class. One tap per student. Mark all at once or individually.</p>
+    <div class="section-inner">
+      <div class="sec-head reveal">
+        <div class="eyebrow">Features</div>
+        <h2 class="sec-title">Everything you need, nothing you don't</h2>
+        <p class="sec-sub">Designed for daily use — open every morning, close every evening. Fully automatic.</p>
       </div>
-      <div class="feat-card">
-        <div class="feat-icon"><svg viewBox="0 0 24 24"><path d="M3 3h18v18H3zM3 9h18M9 21V9"/></svg></div>
-        <h3>Class-wise Structure</h3>
-        <p>Separate registers for Class 6, 7, 8, 9, and 10. Switch between classes instantly.</p>
-      </div>
-      <div class="feat-card">
-        <div class="feat-icon"><svg viewBox="0 0 24 24"><path d="M18 20V10M12 20V4M6 20v-6"/></svg></div>
-        <h3>Reports & Analytics</h3>
-        <p>Attendance percentage per student. Pie chart and horizontal bar chart. Color coded.</p>
-      </div>
-      <div class="feat-card">
-        <div class="feat-icon"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
-        <h3>Student Profiles</h3>
-        <p>Apaar ID, PAN, DOB, parent details, address, admission number — all in one place.</p>
-      </div>
-      <div class="feat-card">
-        <div class="feat-icon"><svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg></div>
-        <h3>PIN + Password Security</h3>
-        <p>Login password and animated PIN keypad. Two layers of protection.</p>
-      </div>
-      <div class="feat-card">
-        <div class="feat-icon"><svg viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg></div>
-        <h3>Firebase Backend</h3>
-        <p>All data stored in Firebase Firestore. Works offline and auto-syncs when back online.</p>
+      <div class="feat-grid reveal">
+        <div class="feat-card"><div class="feat-icon"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></div><h3>Morning & Lunch Attendance</h3><p>Mark two sessions daily per class. One tap per student. Bulk mark all at once.</p></div>
+        <div class="feat-card"><div class="feat-icon"><svg viewBox="0 0 24 24"><path d="M3 3h18v18H3zM3 9h18M9 21V9"/></svg></div><h3>Class-wise Structure</h3><p>Separate registers for Class 6–10. Instant switching. Data always isolated.</p></div>
+        <div class="feat-card"><div class="feat-icon"><svg viewBox="0 0 24 24"><path d="M18 20V10M12 20V4M6 20v-6"/></svg></div><h3>Dashboard & Analytics</h3><p>Live clock, greeting, pending tasks with typing effect. Pie and bar charts.</p></div>
+        <div class="feat-card"><div class="feat-icon"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div><h3>Interconnected Profiles</h3><p>Add student once — profile auto-created. Remove student — profile removed. Always in sync.</p></div>
+        <div class="feat-card"><div class="feat-icon"><svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg></div><h3>PIN + Password Security</h3><p>Login password and animated PIN keypad. Class selection before access.</p></div>
+        <div class="feat-card"><div class="feat-icon"><svg viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg></div><h3>Data Integrity Engine</h3><p>Auto-runs checks every 5 minutes. No orphan profiles. No missing links. Ever.</p></div>
       </div>
     </div>
   </div>
 </div>
 
-<div class="quote-section">
+<div class="quote-sec reveal">
   <div class="quote-inner">
-    <div class="quote-text">"Built for real classrooms, not for tech teams."</div>
-    <div class="quote-attr">Vidyam · Mrs. Sangeetha Singh · Classes 6–10</div>
+    <div class="quote-line"></div>
+    <div class="quote-text">"Built for real classrooms,<br>not for tech teams."</div>
+    <div class="quote-attr">Sangeetam Portal · Mrs. Sangeetha Singh · Classes 6–10</div>
   </div>
 </div>
 
 <div class="section" id="modules">
-  <div class="section-head">
-    <div class="section-label">Modules</div>
-    <h2 class="section-title">Four tools, one system</h2>
-    <p class="section-sub">Each module handles one job well. Together they cover everything needed to run a class register.</p>
-  </div>
-  <div class="mod-grid">
-    <div class="mod-card" onclick="location.href='login.html'">
-      <div class="mod-card-top">
-        <div class="mod-card-left">
-          <div class="mod-card-icon"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></div>
-          <div class="mod-card-title">Attendance Register</div>
-        </div>
-        <span class="mod-card-arrow">↗</span>
-      </div>
-      <p class="mod-card-desc">Morning and lunch attendance for all 5 classes. Navigate by date, mark individually or all at once.</p>
-      <div class="mod-tags"><span class="mod-tag">Classes 6–10</span><span class="mod-tag">Morning</span><span class="mod-tag">Lunch</span><span class="mod-tag">Calendar</span></div>
+  <div class="section-inner">
+    <div class="sec-head reveal">
+      <div class="eyebrow">Modules</div>
+      <h2 class="sec-title">Five tools, one portal</h2>
+      <p class="sec-sub">Each module handles one job perfectly. Together they run a complete school register.</p>
     </div>
-    <div class="mod-card" onclick="location.href='login.html'">
-      <div class="mod-card-top">
-        <div class="mod-card-left">
-          <div class="mod-card-icon"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg></div>
-          <div class="mod-card-title">Student Management</div>
-        </div>
-        <span class="mod-card-arrow">↗</span>
+    <div class="mod-grid reveal">
+      <div class="mod-card" onclick="location.href='login.html'">
+        <div class="mod-top"><div class="mod-left"><div class="mod-icon"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></div><div class="mod-title">Attendance Register</div></div><span class="mod-arr">↗</span></div>
+        <p class="mod-desc">Morning and lunch attendance for all 5 classes. Calendar view, bulk mark, date navigation.</p>
+        <div class="mod-tags"><span class="mod-tag">Classes 6–10</span><span class="mod-tag">Morning</span><span class="mod-tag">Lunch</span><span class="mod-tag">Calendar</span></div>
       </div>
-      <p class="mod-card-desc">Add students once — they appear in attendance and profile automatically. Full details: Apaar ID, PAN, parents, address.</p>
-      <div class="mod-tags"><span class="mod-tag">Auto-linked</span><span class="mod-tag">Apaar ID</span><span class="mod-tag">PAN</span><span class="mod-tag">Parents</span></div>
-    </div>
-    <div class="mod-card" onclick="location.href='login.html'">
-      <div class="mod-card-top">
-        <div class="mod-card-left">
-          <div class="mod-card-icon"><svg viewBox="0 0 24 24"><path d="M18 20V10M12 20V4M6 20v-6"/></svg></div>
-          <div class="mod-card-title">Reports & Charts</div>
-        </div>
-        <span class="mod-card-arrow">↗</span>
+      <div class="mod-card" onclick="location.href='login.html'">
+        <div class="mod-top"><div class="mod-left"><div class="mod-icon"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg></div><div class="mod-title">Student Management</div></div><span class="mod-arr">↗</span></div>
+        <p class="mod-desc">Add once — profile auto-created and strictly linked. Apaar ID, PAN, DOB, parents, address. Remove once — both gone.</p>
+        <div class="mod-tags"><span class="mod-tag">Auto-linked</span><span class="mod-tag">Apaar ID</span><span class="mod-tag">PAN</span><span class="mod-tag">Parents</span></div>
       </div>
-      <p class="mod-card-desc">Pie chart and horizontal bar chart. Auto-calculated attendance % per student. Green ≥75%, amber ≥50%, red below.</p>
-      <div class="mod-tags"><span class="mod-tag">Pie chart</span><span class="mod-tag">Bar chart</span><span class="mod-tag">% per student</span></div>
-    </div>
-    <div class="mod-card" onclick="location.href='login.html'">
-      <div class="mod-card-top">
-        <div class="mod-card-left">
-          <div class="mod-card-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 010 14.14M4.93 4.93a10 10 0 000 14.14"/></svg></div>
-          <div class="mod-card-title">Settings & Security</div>
-        </div>
-        <span class="mod-card-arrow">↗</span>
+      <div class="mod-card" onclick="location.href='login.html'">
+        <div class="mod-top"><div class="mod-left"><div class="mod-icon"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg></div><div class="mod-title">Dashboard</div></div><span class="mod-arr">↗</span></div>
+        <p class="mod-desc">Live clock, greeting, 6 metric cards, pending tasks with typing animation in English and Hindi.</p>
+        <div class="mod-tags"><span class="mod-tag">Live clock</span><span class="mod-tag">Typing tasks</span><span class="mod-tag">Metrics</span></div>
       </div>
-      <p class="mod-card-desc">Change login credentials and PIN. Firebase-backed data. Auto dark mode after 5pm.</p>
-      <div class="mod-tags"><span class="mod-tag">Change password</span><span class="mod-tag">Change PIN</span><span class="mod-tag">Auto dark mode</span></div>
+      <div class="mod-card" onclick="location.href='login.html'">
+        <div class="mod-top"><div class="mod-left"><div class="mod-icon"><svg viewBox="0 0 24 24"><path d="M18 20V10M12 20V4M6 20v-6"/></svg></div><div class="mod-title">Reports & Charts</div></div><span class="mod-arr">↗</span></div>
+        <p class="mod-desc">Pie chart + horizontal bar chart. Auto-calculated % attendance per student. Color coded.</p>
+        <div class="mod-tags"><span class="mod-tag">Pie chart</span><span class="mod-tag">Bar chart</span><span class="mod-tag">% Per student</span></div>
+      </div>
     </div>
   </div>
 </div>
 
 <footer id="about">
   <div class="ft-inner">
-    <div class="ft-top">
-      <div class="ft-brand"><h2>Vidyam</h2><p>A secure school management system for teachers. Free, offline-capable, Firebase-backed.</p></div>
+    <div class="ft-top reveal">
+      <div class="ft-brand"><h2>Sangeetam Portal</h2><p>A professional school management system. Free, offline-capable, Firebase-backed with data integrity.</p></div>
       <div class="ft-cols">
-        <div class="ft-col">
-          <h4>Modules</h4>
-          <a href="login.html">Attendance</a>
-          <a href="login.html">Students</a>
-          <a href="login.html">Reports</a>
-          <a href="login.html">Settings</a>
-        </div>
-        <div class="ft-col">
-          <h4>Access</h4>
-          <a href="login.html">Sign in</a>
-        </div>
+        <div class="ft-col"><h4>Modules</h4><a href="login.html">Attendance</a><a href="login.html">Students</a><a href="login.html">Dashboard</a><a href="login.html">Reports</a></div>
+        <div class="ft-col"><h4>Access</h4><a href="login.html">Sign in</a></div>
       </div>
     </div>
-    <div class="ft-bottom">
-      <p>© <span id="yr"></span> Vidyam · Mrs. Sangeetha Singh</p>
-      <p>Hosted free · GitHub Pages · Firebase</p>
-    </div>
+    <div class="ft-bottom"><p>© <span id="yr"></span> Sangeetam Portal · Mrs. Sangeetha Singh</p><p>GitHub Pages · Firebase Firestore</p></div>
   </div>
 </footer>
 
-<!-- DARK MODE TOAST -->
-<div id="dark-toast">
-  <button class="dt-close" onclick="dismissToast()">×</button>
-  <div class="dt-icon">
-    <svg viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
-  </div>
-  <div class="dt-content">
-    <h4>Evening mode available</h4>
-    <p>It's getting dark outside. Switch to dark mode to reduce eye strain.</p>
-    <div class="dt-actions">
-      <button class="btn btn-primary btn-sm" onclick="enableDark()">Enable dark mode</button>
-      <button class="btn btn-secondary btn-sm" onclick="dismissToast()">Dismiss</button>
-    </div>
-  </div>
-</div>
-
+<script src="db.js"></script>
 <script>
 document.getElementById('yr').textContent = new Date().getFullYear();
 
-// ── THEME ─────────────────────────────────────────────────
-const root = document.documentElement;
-const themeBtn = document.getElementById('themeBtn');
-const sunIcon  = document.getElementById('theme-icon-sun');
-const moonIcon = document.getElementById('theme-icon-moon');
+// ── CANVAS PARTICLES ──────────────────────────────────────
+const canvas = document.getElementById('bg-canvas');
+const ctx    = canvas.getContext('2d');
+let W, H, pts = [], mouse = {x:-999,y:-999};
 
-function getSavedTheme() { return localStorage.getItem('vs_theme') || 'light'; }
-function applyTheme(t) {
-  root.setAttribute('data-theme', t);
-  localStorage.setItem('vs_theme', t);
-  if (t === 'dark') { sunIcon.style.display='none'; moonIcon.style.display='block'; }
-  else              { sunIcon.style.display='block'; moonIcon.style.display='none'; }
-}
-function toggleTheme() {
-  applyTheme(root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
-}
-function enableDark() { applyTheme('dark'); dismissToast(); }
+function resize() { W=canvas.width=innerWidth; H=canvas.height=innerHeight; }
+window.addEventListener('resize', () => { resize(); initPts(); });
+window.addEventListener('mousemove', e => { mouse.x=e.clientX; mouse.y=e.clientY; });
+resize();
 
-// Auto dark mode 5pm–7pm
-function checkAutoTheme() {
-  const h = new Date().getHours();
-  const currentTheme = getSavedTheme();
-  const dismissed = sessionStorage.getItem('vs_dark_dismissed');
-  if (h >= 17 && h < 19 && currentTheme === 'light' && !dismissed) {
-    document.getElementById('dark-toast').classList.add('show');
+function initPts() {
+  pts = [];
+  for (let i=0; i<70; i++) pts.push({
+    x:Math.random()*W, y:Math.random()*H,
+    vx:(Math.random()-.5)*.35, vy:(Math.random()-.5)*.35,
+    r:Math.random()*1.8+.4
+  });
+}
+initPts();
+
+function drawCanvas() {
+  ctx.clearRect(0,0,W,H);
+  const isDark = document.documentElement.getAttribute('data-theme')==='dark';
+  const pc = isDark ? 'rgba(255,255,255,' : 'rgba(0,0,0,';
+  pts.forEach(p => {
+    p.x+=p.vx; p.y+=p.vy;
+    if(p.x<0||p.x>W) p.vx*=-1;
+    if(p.y<0||p.y>H) p.vy*=-1;
+    ctx.beginPath();
+    ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+    ctx.fillStyle = pc+'0.18)';
+    ctx.fill();
+    // Mouse connect
+    const dm = Math.hypot(p.x-mouse.x, p.y-mouse.y);
+    if (dm < 160) {
+      ctx.beginPath(); ctx.moveTo(p.x,p.y); ctx.lineTo(mouse.x,mouse.y);
+      ctx.strokeStyle = pc+(0.12*(1-dm/160))+')';
+      ctx.lineWidth=.8; ctx.stroke();
+    }
+    pts.forEach(q => {
+      const d = Math.hypot(p.x-q.x, p.y-q.y);
+      if (d < 120) {
+        ctx.beginPath(); ctx.moveTo(p.x,p.y); ctx.lineTo(q.x,q.y);
+        ctx.strokeStyle = pc+(0.07*(1-d/120))+')';
+        ctx.lineWidth=.5; ctx.stroke();
+      }
+    });
+  });
+  requestAnimationFrame(drawCanvas);
+}
+drawCanvas();
+
+// ── TYPING ANIMATION ──────────────────────────────────────
+const TITLE_TEXT = 'Sangeetam Portal';
+const titleEl    = document.getElementById('hero-title');
+const cursor     = document.getElementById('typing-cursor');
+const subEl      = document.getElementById('hero-sub');
+const btnsEl     = document.getElementById('hero-btns');
+const scrollInd  = document.getElementById('scroll-ind');
+
+let typed = '';
+let charIdx = 0;
+
+function typeNext() {
+  if (charIdx < TITLE_TEXT.length) {
+    typed += TITLE_TEXT[charIdx];
+    titleEl.innerHTML = typed + '<span class="typing-cursor" id="typing-cursor"></span>';
+    charIdx++;
+    // Variable speed for realism
+    const delay = TITLE_TEXT[charIdx-1] === ' ' ? 120 : Math.random()*60+50;
+    setTimeout(typeNext, delay);
+  } else {
+    // Remove cursor blink after done, fade in rest
+    titleEl.innerHTML = typed;
+    // Fade in subtitle
+    subEl.style.transition = 'opacity .8s ease, transform .8s ease';
+    subEl.style.opacity = '1';
+    subEl.style.transform = 'translateY(0)';
+    subEl.style.transform = 'none';
+    setTimeout(() => {
+      btnsEl.style.transition = 'opacity .8s ease';
+      btnsEl.style.opacity = '1';
+      setTimeout(() => {
+        scrollInd.style.transition = 'opacity .8s ease';
+        scrollInd.style.opacity = '1';
+      }, 400);
+    }, 300);
   }
 }
-function dismissToast() {
-  document.getElementById('dark-toast').classList.remove('show');
-  sessionStorage.setItem('vs_dark_dismissed', '1');
-}
 
-applyTheme(getSavedTheme());
-setTimeout(checkAutoTheme, 2000);
+// Init sub position
+subEl.style.transform = 'translateY(8px)';
+setTimeout(typeNext, 800);
+
+// ── LIVE STUDENT COUNT ────────────────────────────────────
+function updateStudentCount() {
+  let total = 0;
+  DB.CLASS_ORDER.forEach(cid => { total += DB.getStudents(cid).length; });
+  // Animate count up
+  const el = document.getElementById('c-students');
+  let cur = 0;
+  const step = () => {
+    if (cur < total) { cur++; el.textContent = cur; requestAnimationFrame(step); }
+    else el.textContent = total;
+  };
+  requestAnimationFrame(step);
+}
+updateStudentCount();
+
+// ── SCROLL REVEAL ─────────────────────────────────────────
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => { if(e.isIntersecting) { e.target.classList.add('visible'); } });
+}, { threshold: 0.15 });
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+// ── NIGHT SUGGESTION ─────────────────────────────────────
+function checkNightSuggestion() {
+  const h = new Date().getHours();
+  const theme = DB.getTheme();
+  const dismissed = sessionStorage.getItem('sp_night_dismissed');
+  if (h >= 17 && theme === 'light' && !dismissed) {
+    setTimeout(() => document.getElementById('night-suggestion').classList.add('show'), 3000);
+  }
+}
+function switchDark() { applyTheme('dark'); dismissNight(); }
+function dismissNight() {
+  document.getElementById('night-suggestion').classList.remove('show');
+  sessionStorage.setItem('sp_night_dismissed','1');
+}
+checkNightSuggestion();
+
+// ── THEME ─────────────────────────────────────────────────
+const root = document.documentElement;
+applyTheme(DB.getTheme());
+function applyTheme(t) {
+  root.setAttribute('data-theme', t);
+  DB.setTheme(t);
+  const sun   = document.getElementById('theme-sun');
+  const moon  = document.getElementById('theme-moon');
+  const label = document.getElementById('theme-label');
+  if (t === 'dark') {
+    sun.style.display='none'; moon.style.display='block';
+    label.textContent='Light mode';
+  } else {
+    sun.style.display='block'; moon.style.display='none';
+    label.textContent='Dark mode';
+  }
+}
+function toggleTheme() {
+  applyTheme(root.getAttribute('data-theme')==='dark' ? 'light' : 'dark');
+}
 </script>
 </body>
 </html>
