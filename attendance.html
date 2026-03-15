@@ -2,227 +2,379 @@
 <html lang="en" data-theme="light">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Attendance — Vidya Setu</title>
-<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Vidya Setu — Attendance</title>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;1,400&family=Inter:wght@300;400;500;600&family=Noto+Sans+Devanagari:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-:root{--tr:background .3s,color .3s,border-color .3s;}
+:root{--tr:background .35s,color .35s,border-color .35s;}
 [data-theme="light"]{
   --bg:#f2ede4;--bg2:#ede7db;--bg3:#e6dfd3;
   --text:#1a1712;--text2:#5c5649;--text3:#9a9080;
   --warm:#7a5c38;--accent:#c96b3a;
   --border:rgba(0,0,0,0.09);--border2:rgba(0,0,0,0.15);
-  --card:#fff8f0;--card2:#f5ede0;--input-bg:#ede7db;
-  --nav-bg:rgba(242,237,228,0.93);
+  --card:#fff8f0;--input-bg:#ede7db;
+  --nav-bg:rgba(242,237,228,0.95);
   --btn-bg:#1a1712;--btn-text:#f2ede4;
   --green:#166534;--green-bg:#dcfce7;--green-bd:#86efac;
   --red:#b91c1c;--red-bg:#fee2e2;--red-bd:#fca5a5;
   --amber:#92400e;--amber-bg:#fef3c7;
   --blue:#1d4ed8;--blue-bg:#dbeafe;--blue-bd:#93c5fd;
   --toggle-bg:#d4c9b5;--shadow:0 2px 16px rgba(0,0,0,0.07);
+  --pin-bg:rgba(242,237,228,0.98);
+  --pin-dot-empty:rgba(0,0,0,0.15);--pin-dot-fill:#7a5c38;
+  --key-bg:#fff8f0;--key-hover:#ede7db;--key-shadow:0 2px 8px rgba(0,0,0,0.1);
 }
 [data-theme="dark"]{
   --bg:#0f0f0e;--bg2:#1a1915;--bg3:#252420;
   --text:#f0ebe0;--text2:#9a9488;--text3:#6b665e;
   --warm:#c4a882;--accent:#d4784a;
   --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.14);
-  --card:#1e1c18;--card2:#252420;--input-bg:#252420;
-  --nav-bg:rgba(15,15,14,0.92);
+  --card:#1e1c18;--input-bg:#252420;
+  --nav-bg:rgba(15,15,14,0.95);
   --btn-bg:#f0ebe0;--btn-text:#0f0f0e;
   --green:#4ade80;--green-bg:rgba(74,222,128,0.1);--green-bd:rgba(74,222,128,0.25);
   --red:#f87171;--red-bg:rgba(248,113,113,0.1);--red-bd:rgba(248,113,113,0.25);
   --amber:#fbbf24;--amber-bg:rgba(251,191,36,0.1);
   --blue:#60a5fa;--blue-bg:rgba(96,165,250,0.1);--blue-bd:rgba(96,165,250,0.25);
   --toggle-bg:#3a3830;--shadow:0 2px 16px rgba(0,0,0,0.3);
+  --pin-bg:rgba(15,15,14,0.98);
+  --pin-dot-empty:rgba(255,255,255,0.15);--pin-dot-fill:#c4a882;
+  --key-bg:#1e1c18;--key-hover:#252420;--key-shadow:0 2px 8px rgba(0,0,0,0.4);
 }
-*{box-sizing:border-box;margin:0;padding:0;}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;overflow-x:hidden;}
 body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;transition:var(--tr);}
 
-/* NAV */
-nav{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:13px 28px;background:var(--nav-bg);backdrop-filter:blur(18px);border-bottom:1px solid var(--border);transition:var(--tr);gap:10px;flex-wrap:wrap;}
+/* ═══════════════════════════════
+   PIN OVERLAY
+═══════════════════════════════ */
+#pin-overlay{
+  position:fixed;inset:0;z-index:800;
+  background:var(--pin-bg);
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  padding:24px 20px;
+  transition:opacity .4s ease,transform .4s ease;
+  opacity:1;transform:translateY(0);
+}
+#pin-overlay.hiding{opacity:0;transform:translateY(-24px);pointer-events:none;}
+#pin-overlay.hidden{display:none;}
+
+.pin-icon{
+  font-size:52px;margin-bottom:10px;
+  animation:pinIconFloat 3s ease-in-out infinite;
+}
+@keyframes pinIconFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+
+.pin-greeting{
+  font-family:'Noto Sans Devanagari',sans-serif;
+  font-size:clamp(22px,6vw,32px);
+  font-weight:600;color:var(--warm);
+  text-align:center;line-height:1.3;margin-bottom:4px;
+  animation:fadeSlideDown .6s ease both;
+}
+.pin-greeting-en{
+  font-family:'Lora',serif;font-style:italic;
+  font-size:clamp(14px,3.5vw,18px);
+  color:var(--text2);text-align:center;margin-bottom:6px;
+  animation:fadeSlideDown .6s .1s ease both;
+}
+.pin-name{
+  font-family:'Inter',sans-serif;font-size:clamp(13px,3vw,15px);
+  color:var(--text3);text-align:center;margin-bottom:6px;
+  animation:fadeSlideDown .6s .15s ease both;
+}
+.pin-datetime{
+  font-size:clamp(12px,2.8vw,14px);color:var(--text3);
+  text-align:center;margin-bottom:28px;
+  animation:fadeSlideDown .6s .2s ease both;
+  font-family:'Noto Sans Devanagari',sans-serif;
+}
+
+/* PIN DOTS */
+.pin-dots{
+  display:flex;gap:16px;margin-bottom:28px;
+  animation:fadeSlideDown .6s .25s ease both;
+}
+.pin-dot{
+  width:16px;height:16px;border-radius:50%;
+  background:var(--pin-dot-empty);
+  transition:background .25s,transform .25s;
+}
+.pin-dot.filled{
+  background:var(--pin-dot-fill);
+  transform:scale(1.15);
+  animation:dotPop .25s ease;
+}
+@keyframes dotPop{0%{transform:scale(0.8)}60%{transform:scale(1.3)}100%{transform:scale(1.15)}}
+
+/* KEYPAD */
+.keypad{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:12px;
+  width:100%;max-width:280px;
+  animation:fadeSlideUp .6s .3s ease both;
+}
+.key{
+  background:var(--key-bg);border:1px solid var(--border2);
+  border-radius:14px;padding:0;height:64px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  cursor:pointer;transition:background .15s,transform .1s,box-shadow .15s;
+  box-shadow:var(--key-shadow);user-select:none;
+  -webkit-user-select:none;
+}
+.key:active{transform:scale(0.93);background:var(--bg3);}
+.key .kn{font-size:22px;font-weight:600;color:var(--text);line-height:1;}
+.key .kl{font-size:8px;letter-spacing:1.5px;color:var(--text3);margin-top:2px;font-weight:600;}
+.key.del{font-size:20px;color:var(--text2);}
+.key.empty{background:transparent;border-color:transparent;box-shadow:none;pointer-events:none;}
+
+/* ERROR SHAKE */
+.pin-error{
+  font-size:13px;font-weight:600;color:var(--red);
+  height:20px;text-align:center;margin-top:10px;
+  opacity:0;transition:opacity .2s;
+}
+.pin-error.show{opacity:1;animation:errShake .4s ease;}
+@keyframes errShake{0%,100%{transform:translateX(0)}20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-5px)}80%{transform:translateX(5px)}}
+
+@keyframes fadeSlideDown{from{opacity:0;transform:translateY(-14px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeSlideUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+
+/* ═══════════════════════════════
+   GREETING FLASH (after PIN)
+═══════════════════════════════ */
+#greet-flash{
+  position:fixed;inset:0;z-index:700;
+  background:var(--bg);
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  gap:8px;padding:32px 24px;text-align:center;
+  opacity:0;pointer-events:none;transition:opacity .4s;
+}
+#greet-flash.show{opacity:1;}
+.gf-icon{font-size:64px;animation:gfBounce .6s ease;}
+@keyframes gfBounce{0%{transform:scale(0.5);opacity:0}70%{transform:scale(1.15)}100%{transform:scale(1);opacity:1}}
+.gf-hi{font-family:'Noto Sans Devanagari',sans-serif;font-size:clamp(24px,7vw,38px);font-weight:600;color:var(--warm);}
+.gf-hi-en{font-family:'Lora',serif;font-style:italic;font-size:clamp(18px,5vw,28px);color:var(--text2);}
+.gf-name{font-size:clamp(14px,4vw,18px);color:var(--text3);}
+
+/* ═══════════════════════════════
+   NAV
+═══════════════════════════════ */
+nav{
+  position:sticky;top:0;z-index:100;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:12px 18px;
+  background:var(--nav-bg);backdrop-filter:blur(18px);
+  border-bottom:1px solid var(--border);transition:var(--tr);gap:8px;
+}
 .nav-logo{display:flex;align-items:center;gap:8px;text-decoration:none;}
-.nav-mark{width:30px;height:30px;background:var(--text);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:15px;transition:background .3s;}
-.nav-title{font-family:'Lora',serif;font-size:16px;color:var(--text);transition:color .3s;}
-.nav-title span{font-family:'Inter',sans-serif;font-size:11px;color:var(--text3);display:block;margin-top:1px;}
-.nav-r{display:flex;align-items:center;gap:8px;}
-.theme-toggle{width:32px;height:32px;background:var(--toggle-bg);border:1px solid var(--border2);border-radius:7px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;transition:background .3s;}
-.logout-btn{font-size:13px;font-weight:500;color:var(--text2);background:none;border:1px solid var(--border2);border-radius:7px;padding:6px 12px;cursor:pointer;font-family:inherit;transition:color .2s;}
-.logout-btn:hover{color:var(--text);}
+.nav-mark{width:28px;height:28px;background:var(--text);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:14px;transition:background .3s;flex-shrink:0;}
+.nav-title{font-family:'Lora',serif;font-size:15px;color:var(--text);transition:color .3s;line-height:1.2;}
+.nav-title span{font-family:'Inter',sans-serif;font-size:10px;color:var(--text3);display:block;}
+.nav-r{display:flex;align-items:center;gap:6px;}
+.theme-toggle{width:30px;height:30px;background:var(--toggle-bg);border:1px solid var(--border2);border-radius:7px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;}
+.logout-btn{font-size:12px;font-weight:500;color:var(--text2);background:none;border:1px solid var(--border2);border-radius:6px;padding:5px 10px;cursor:pointer;font-family:inherit;white-space:nowrap;}
 
 /* TABS */
-.tabs{display:flex;border-bottom:1px solid var(--border);padding:0 20px;background:var(--bg2);overflow-x:auto;transition:var(--tr);gap:2px;}
-.tab{font-family:'Inter',sans-serif;font-size:13px;font-weight:500;padding:12px 15px;border:none;background:none;cursor:pointer;color:var(--text2);border-bottom:2px solid transparent;white-space:nowrap;transition:color .15s,border-color .15s;}
+.tabs{display:flex;border-bottom:1px solid var(--border);padding:0 12px;background:var(--bg2);overflow-x:auto;-webkit-overflow-scrolling:touch;transition:var(--tr);scrollbar-width:none;}
+.tabs::-webkit-scrollbar{display:none;}
+.tab{font-family:'Inter',sans-serif;font-size:12px;font-weight:500;padding:11px 12px;border:none;background:none;cursor:pointer;color:var(--text2);border-bottom:2px solid transparent;white-space:nowrap;transition:color .15s,border-color .15s;flex-shrink:0;}
 .tab.active{color:var(--warm);border-bottom-color:var(--warm);}
-.tab:hover:not(.active){color:var(--text);}
 
 /* MAIN */
-.main{max-width:900px;margin:0 auto;padding:24px 16px;}
+.main{max-width:860px;margin:0 auto;padding:16px 12px 80px;}
 .panel{display:none;}.panel.active{display:block;}
 
 /* CARD */
-.card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:16px;box-shadow:var(--shadow);transition:var(--tr);}
-.card-title{font-family:'Lora',serif;font-size:16px;font-weight:400;color:var(--text);margin-bottom:16px;display:flex;align-items:center;gap:8px;transition:color .3s;}
+.card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:14px;box-shadow:var(--shadow);transition:var(--tr);}
+.card-title{font-family:'Lora',serif;font-size:15px;font-weight:400;color:var(--text);margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+.card-title-hi{font-family:'Noto Sans Devanagari',sans-serif;font-size:11px;color:var(--text3);margin-left:4px;font-weight:400;}
 
 /* DATE NAV */
-.date-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:20px;}
-.arrow-btn{background:var(--card);border:1px solid var(--border2);border-radius:8px;padding:8px 14px;cursor:pointer;font-size:15px;color:var(--warm);font-weight:600;transition:background .15s;}
-.arrow-btn:hover{background:var(--bg2);}
-.date-label{font-family:'Lora',serif;font-size:16px;color:var(--text);flex:1;min-width:150px;transition:color .3s;}
-input[type="date"]{background:var(--card);border:1px solid var(--border2);border-radius:8px;padding:8px 12px;font-family:'Inter',sans-serif;font-size:13px;color:var(--text);transition:var(--tr);outline:none;}
-.today-btn{font-size:12px;font-weight:600;color:var(--warm);background:var(--bg2);border:1px solid var(--border2);border-radius:7px;padding:7px 12px;cursor:pointer;font-family:inherit;}
+.date-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:16px;}
+.arrow-btn{background:var(--card);border:1px solid var(--border2);border-radius:8px;padding:8px 14px;cursor:pointer;font-size:16px;color:var(--warm);font-weight:700;min-width:44px;min-height:44px;display:flex;align-items:center;justify-content:center;}
+.date-label{font-family:'Lora',serif;font-size:14px;color:var(--text);flex:1;min-width:120px;line-height:1.3;}
+.date-label-hi{font-family:'Noto Sans Devanagari',sans-serif;font-size:10px;color:var(--text3);display:block;margin-top:1px;}
+input[type="date"]{background:var(--card);border:1px solid var(--border2);border-radius:8px;padding:8px 10px;font-family:'Inter',sans-serif;font-size:13px;color:var(--text);outline:none;max-width:150px;transition:var(--tr);}
+.today-btn{font-size:12px;font-weight:600;color:var(--warm);background:var(--bg2);border:1px solid var(--border2);border-radius:7px;padding:8px 12px;cursor:pointer;font-family:inherit;white-space:nowrap;min-height:40px;}
 
 /* SESSION */
-.sess-head{display:grid;grid-template-columns:1fr 80px 80px;gap:8px;padding:0 6px 8px;border-bottom:1px solid var(--border);}
-.sess-head span{font-size:11px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:var(--text3);}
+.sess-head{display:grid;grid-template-columns:1fr 76px 76px;gap:6px;padding:0 4px 8px;border-bottom:1px solid var(--border);}
+.sess-head span{font-size:10px;font-weight:600;letter-spacing:.6px;text-transform:uppercase;color:var(--text3);}
+.sess-head span.hi{font-family:'Noto Sans Devanagari',sans-serif;letter-spacing:0;font-size:9px;}
 .sess-head span:nth-child(2),.sess-head span:nth-child(3){text-align:center;}
-.stu-row{display:grid;grid-template-columns:1fr 80px 80px;gap:8px;align-items:center;padding:9px 6px;border-bottom:1px solid var(--bg2);transition:background .1s;}
+.stu-row{display:grid;grid-template-columns:1fr 76px 76px;gap:6px;align-items:center;padding:8px 4px;border-bottom:1px solid var(--bg2);transition:background .1s;}
 .stu-row:hover{background:var(--bg2);border-radius:8px;}
 .stu-row:last-child{border-bottom:none;}
-.sname{font-size:14px;font-weight:500;color:var(--text);transition:color .3s;}
-.sroll{font-size:11px;color:var(--text3);}
+.sname{font-size:13px;font-weight:500;color:var(--text);}
+.sroll{font-size:10px;color:var(--text3);}
 .att-cell{display:flex;justify-content:center;}
-.att-btn{border:1.5px solid;border-radius:7px;padding:5px 0;width:64px;font-size:12px;font-weight:600;cursor:pointer;background:transparent;font-family:'Inter',sans-serif;transition:all .15s;}
+.att-btn{border:1.5px solid;border-radius:7px;padding:0;width:60px;height:34px;font-size:12px;font-weight:600;cursor:pointer;background:transparent;font-family:'Inter',sans-serif;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:2px;}
 .att-btn.P{border-color:var(--green-bd);color:var(--green);}
 .att-btn.P.on{background:var(--green);color:#fff;border-color:var(--green);}
 .att-btn.A{border-color:var(--red-bd);color:var(--red);}
 .att-btn.A.on{background:var(--red);color:#fff;border-color:var(--red);}
-.att-btn:hover{opacity:.75;transform:scale(1.04);}
 
 /* MARK ALL */
-.mall-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:14px;}
-.mall-row label{font-size:12px;font-weight:600;color:var(--text3);}
-.mall-p{background:var(--green-bg);border:1px solid var(--green-bd);color:var(--green);border-radius:7px;padding:6px 13px;cursor:pointer;font-size:12px;font-weight:600;font-family:inherit;transition:all .15s;}
-.mall-p:hover{background:var(--green);color:#fff;}
-.mall-a{background:var(--red-bg);border:1px solid var(--red-bd);color:var(--red);border-radius:7px;padding:6px 13px;cursor:pointer;font-size:12px;font-weight:600;font-family:inherit;}
-.mall-a:hover{background:var(--red);color:#fff;}
+.mall-row{display:flex;gap:7px;align-items:center;flex-wrap:wrap;margin-bottom:12px;}
+.mall-row label{font-size:11px;font-weight:600;color:var(--text3);}
+.mall-p{background:var(--green-bg);border:1px solid var(--green-bd);color:var(--green);border-radius:7px;padding:6px 12px;cursor:pointer;font-size:11px;font-weight:600;font-family:inherit;min-height:36px;}
+.mall-a{background:var(--red-bg);border:1px solid var(--red-bd);color:var(--red);border-radius:7px;padding:6px 12px;cursor:pointer;font-size:11px;font-weight:600;font-family:inherit;min-height:36px;}
 
 /* BADGES */
-.badges{display:flex;gap:7px;flex-wrap:wrap;margin-top:14px;}
-.badge{padding:4px 13px;border-radius:20px;font-size:12px;font-weight:600;}
+.badges{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px;}
+.badge{padding:4px 11px;border-radius:20px;font-size:11px;font-weight:600;}
 .bg-g{background:var(--green-bg);color:var(--green);border:1px solid var(--green-bd);}
 .bg-r{background:var(--red-bg);color:var(--red);border:1px solid var(--red-bd);}
 .bg-n{background:var(--bg2);color:var(--text3);border:1px solid var(--border2);}
 
-/* CLASS LIST TAB */
-.add-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;}
-.add-row input{flex:1;min-width:160px;background:var(--input-bg);border:1px solid var(--border2);border-radius:8px;padding:10px 14px;font-family:'Inter',sans-serif;font-size:14px;color:var(--text);outline:none;transition:var(--tr);}
+/* CLASS LIST */
+.add-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;}
+.add-row input{flex:1;min-width:150px;background:var(--input-bg);border:1px solid var(--border2);border-radius:8px;padding:10px 12px;font-family:'Inter',sans-serif;font-size:14px;color:var(--text);outline:none;transition:var(--tr);}
 .add-row input:focus{border-color:var(--warm);}
-.btn-add{background:var(--btn-bg);color:var(--btn-text);border:none;border-radius:8px;padding:10px 20px;cursor:pointer;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;transition:opacity .2s,background .3s,color .3s;}
-.btn-add:hover{opacity:.82;}
-.stu-item{display:flex;align-items:center;justify-content:space-between;padding:11px 14px;background:var(--bg2);border-radius:10px;border:1px solid var(--border);margin-bottom:8px;transition:var(--tr);}
-.stu-num{width:26px;height:26px;border-radius:7px;background:var(--card);border:1px solid var(--border2);font-size:12px;font-weight:600;color:var(--warm);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-.stu-item-l{display:flex;align-items:center;gap:10px;}
+.btn-add{background:var(--btn-bg);color:var(--btn-text);border:none;border-radius:8px;padding:10px 18px;cursor:pointer;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;min-height:44px;transition:opacity .2s,background .3s,color .3s;}
+.stu-item{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:var(--bg2);border-radius:10px;border:1px solid var(--border);margin-bottom:7px;transition:var(--tr);}
+.stu-num{width:24px;height:24px;border-radius:6px;background:var(--card);border:1px solid var(--border2);font-size:11px;font-weight:600;color:var(--warm);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.stu-item-l{display:flex;align-items:center;gap:9px;}
 .stu-item-name{font-weight:500;font-size:14px;}
-.btn-rm{background:var(--red-bg);border:1px solid var(--red-bd);color:var(--red);border-radius:7px;padding:5px 12px;cursor:pointer;font-size:12px;font-weight:600;font-family:inherit;}
-.btn-rm:hover{background:var(--red);color:#fff;}
+.btn-rm{background:var(--red-bg);border:1px solid var(--red-bd);color:var(--red);border-radius:7px;padding:5px 11px;cursor:pointer;font-size:12px;font-weight:600;font-family:inherit;min-height:36px;}
+
+/* STUDENT DETAILS */
+.sdet-topbar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:16px;}
+.sdet-title{font-family:'Lora',serif;font-size:17px;font-weight:400;color:var(--text);}
+.sdet-title span{font-size:11px;color:var(--text3);font-family:'Inter',sans-serif;font-weight:400;margin-left:6px;}
+.search-wrap{position:relative;flex:1;min-width:140px;max-width:240px;}
+.search-wrap input{width:100%;background:var(--card);border:1px solid var(--border2);border-radius:9px;padding:9px 12px 9px 32px;font-family:'Inter',sans-serif;font-size:13px;color:var(--text);outline:none;transition:var(--tr);}
+.search-wrap input:focus{border-color:var(--warm);}
+.search-icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:13px;pointer-events:none;}
+.btn-add-stu{background:var(--btn-bg);color:var(--btn-text);border:none;border-radius:8px;padding:9px 14px;cursor:pointer;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;min-height:40px;white-space:nowrap;}
+.stu-cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;}
+.stu-det-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;box-shadow:var(--shadow);transition:var(--tr);}
+.sdc-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px;}
+.sdc-avatar{width:40px;height:40px;border-radius:10px;background:var(--bg2);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-family:'Lora',serif;font-size:15px;font-weight:500;color:var(--warm);flex-shrink:0;}
+.sdc-actions{display:flex;gap:5px;}
+.btn-edit{background:var(--blue-bg);border:1px solid var(--blue-bd);color:var(--blue);border-radius:6px;padding:4px 9px;cursor:pointer;font-size:11px;font-weight:600;font-family:inherit;}
+.btn-del{background:var(--red-bg);border:1px solid var(--red-bd);color:var(--red);border-radius:6px;padding:4px 9px;cursor:pointer;font-size:11px;font-weight:600;font-family:inherit;}
+.sdc-name{font-family:'Lora',serif;font-size:15px;font-weight:400;color:var(--text);margin-bottom:2px;}
+.sdc-sub{font-size:11px;color:var(--text3);}
+.sdc-fields{display:flex;flex-direction:column;gap:5px;margin-top:9px;padding-top:9px;border-top:1px solid var(--border);}
+.sdc-field{display:flex;justify-content:space-between;gap:8px;font-size:12px;}
+.sdc-label{color:var(--text3);font-weight:600;white-space:nowrap;flex-shrink:0;}
+.sdc-val{color:var(--text2);text-align:right;word-break:break-word;}
 
 /* CALENDAR */
-.cal-nav{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
-.cal-nav button{background:none;border:1px solid var(--border2);border-radius:7px;padding:6px 12px;cursor:pointer;font-weight:700;font-size:14px;color:var(--warm);}
-.cal-nav button:hover{background:var(--bg2);}
-.cal-month{flex:1;font-family:'Lora',serif;font-size:17px;color:var(--text);}
-.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;}
-.cal-dn{text-align:center;font-size:10px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:var(--text3);padding:4px 0;}
-.cal-d{text-align:center;border-radius:8px;padding:7px 2px;font-size:13px;cursor:pointer;font-weight:500;color:var(--text2);transition:background .15s;}
+.cal-nav{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
+.cal-nav button{background:none;border:1px solid var(--border2);border-radius:7px;padding:7px 13px;cursor:pointer;font-weight:700;font-size:15px;color:var(--warm);min-height:40px;}
+.cal-month{flex:1;font-family:'Lora',serif;font-size:16px;color:var(--text);}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;}
+.cal-dn{text-align:center;font-size:9px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:var(--text3);padding:3px 0;}
+.cal-d{text-align:center;border-radius:7px;padding:8px 2px;font-size:13px;cursor:pointer;font-weight:500;color:var(--text2);transition:background .15s;min-height:36px;display:flex;align-items:center;justify-content:center;}
 .cal-d.empty{visibility:hidden;}
 .cal-d.today{background:var(--text);color:var(--bg);}
 .cal-d.has{background:var(--green-bg);color:var(--green);border:1px solid var(--green-bd);}
 .cal-d.sel:not(.today){outline:2px solid var(--warm);outline-offset:1px;}
 .cal-d:not(.today):not(.has):hover{background:var(--bg2);}
-.cal-legend{display:flex;gap:14px;margin-top:12px;flex-wrap:wrap;}
-.cal-legend span{font-size:12px;color:var(--text2);display:flex;align-items:center;gap:5px;}
-.leg{width:11px;height:11px;border-radius:3px;display:inline-block;}
 
 /* REPORT */
-.report-wrap{overflow-x:auto;}
-.rtable{width:100%;border-collapse:collapse;font-size:13px;min-width:520px;}
-.rtable th{background:var(--bg2);color:var(--text2);font-weight:600;font-size:11px;letter-spacing:.5px;text-transform:uppercase;padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);}
-.rtable td{padding:10px 12px;border-bottom:1px solid var(--bg2);color:var(--text);font-size:13px;}
+.report-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+.rtable{width:100%;border-collapse:collapse;font-size:12px;min-width:460px;}
+.rtable th{background:var(--bg2);color:var(--text2);font-weight:600;font-size:10px;letter-spacing:.5px;text-transform:uppercase;padding:9px 10px;text-align:left;border-bottom:1px solid var(--border);}
+.rtable td{padding:9px 10px;border-bottom:1px solid var(--bg2);color:var(--text);}
 .rtable tr:last-child td{border-bottom:none;}
 .rtable tr:hover td{background:var(--bg2);}
 .pct{font-weight:600;}
 .pct.g{color:var(--green);}.pct.w{color:var(--amber);}.pct.r{color:var(--red);}
 
-/* ── STUDENT DETAILS TAB ── */
-.sdet-topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:18px;}
-.sdet-topbar-left{font-family:'Lora',serif;font-size:18px;font-weight:400;color:var(--text);}
-.sdet-topbar-left span{font-size:12px;color:var(--text3);font-family:'Inter',sans-serif;font-weight:400;margin-left:8px;}
-.search-wrap{position:relative;flex:1;max-width:260px;}
-.search-wrap input{width:100%;background:var(--card);border:1px solid var(--border2);border-radius:9px;padding:9px 14px 9px 34px;font-family:'Inter',sans-serif;font-size:13px;color:var(--text);outline:none;transition:var(--tr);}
-.search-wrap input:focus{border-color:var(--warm);}
-.search-icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:13px;pointer-events:none;}
-.btn-add-stu{background:var(--btn-bg);color:var(--btn-text);border:none;border-radius:9px;padding:9px 16px;cursor:pointer;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;transition:opacity .2s,background .3s,color .3s;white-space:nowrap;}
-.btn-add-stu:hover{opacity:.82;}
-
-.stu-cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:14px;}
-.stu-det-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px;box-shadow:var(--shadow);transition:var(--tr),border-color .2s;}
-.stu-det-card:hover{border-color:var(--border2);}
-.sdc-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px;}
-.sdc-avatar{width:42px;height:42px;border-radius:10px;background:var(--bg2);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-family:'Lora',serif;font-size:16px;font-weight:500;color:var(--warm);flex-shrink:0;}
-.sdc-actions{display:flex;gap:5px;}
-.btn-edit{background:var(--blue-bg);border:1px solid var(--blue-bd);color:var(--blue);border-radius:7px;padding:4px 10px;cursor:pointer;font-size:11px;font-weight:600;font-family:inherit;}
-.btn-del{background:var(--red-bg);border:1px solid var(--red-bd);color:var(--red);border-radius:7px;padding:4px 10px;cursor:pointer;font-size:11px;font-weight:600;font-family:inherit;}
-.btn-del:hover{background:var(--red);color:#fff;}
-.sdc-name{font-family:'Lora',serif;font-size:15px;font-weight:400;color:var(--text);margin-bottom:2px;}
-.sdc-sub{font-size:11px;color:var(--text3);}
-.sdc-fields{display:flex;flex-direction:column;gap:5px;margin-top:10px;padding-top:10px;border-top:1px solid var(--border);}
-.sdc-field{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;font-size:12px;}
-.sdc-label{color:var(--text3);font-weight:600;white-space:nowrap;flex-shrink:0;}
-.sdc-val{color:var(--text2);text-align:right;word-break:break-word;}
-
-/* MODAL */
-.overlay{position:fixed;inset:0;background:rgba(0,0,0,0.48);z-index:500;display:flex;align-items:center;justify-content:center;padding:16px;opacity:0;pointer-events:none;transition:opacity .25s;}
-.overlay.open{opacity:1;pointer-events:all;}
-.modal{background:var(--card);border:1px solid var(--border2);border-radius:18px;padding:28px 24px;width:100%;max-width:540px;max-height:90vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,0.18);transition:background .3s;transform:translateY(14px);transition:transform .25s,opacity .25s,background .3s;}
-.overlay.open .modal{transform:translateY(0);}
-.modal-hd{font-family:'Lora',serif;font-size:19px;font-weight:400;color:var(--text);margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;}
-.modal-close{background:none;border:none;cursor:pointer;font-size:18px;color:var(--text3);}
-.modal-close:hover{color:var(--text);}
-.fg{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
-.ff{display:flex;flex-direction:column;gap:5px;}
-.ff.s2{grid-column:span 2;}
-.ff label{font-size:10px;font-weight:700;letter-spacing:.9px;text-transform:uppercase;color:var(--text3);}
-.ff input,.ff select{background:var(--input-bg);border:1px solid var(--border2);border-radius:8px;padding:9px 12px;font-family:'Inter',sans-serif;font-size:13px;color:var(--text);outline:none;width:100%;transition:var(--tr);}
-.ff input:focus,.ff select:focus{border-color:var(--warm);}
-.ff select option{background:var(--bg2);color:var(--text);}
-.fsec{font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--warm);grid-column:span 2;padding-top:8px;padding-bottom:4px;border-bottom:1px solid var(--border);margin-top:4px;}
-.modal-ft{display:flex;justify-content:flex-end;gap:10px;margin-top:20px;padding-top:16px;border-top:1px solid var(--border);}
-.btn-cancel{background:none;border:1px solid var(--border2);color:var(--text2);border-radius:8px;padding:9px 16px;cursor:pointer;font-family:'Inter',sans-serif;font-size:13px;font-weight:500;}
-.btn-submit{background:var(--btn-bg);color:var(--btn-text);border:none;border-radius:8px;padding:9px 20px;cursor:pointer;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;transition:opacity .2s,background .3s,color .3s;}
-.btn-submit:hover{opacity:.82;}
-
 /* SETTINGS */
-.set-sec{margin-bottom:24px;}
-.set-sec h3{font-family:'Lora',serif;font-size:14px;font-weight:400;color:var(--text3);letter-spacing:.5px;text-transform:uppercase;margin-bottom:14px;}
-.set-fields{display:flex;flex-direction:column;gap:12px;max-width:360px;}
-.set-field label{font-size:11px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:var(--text3);display:block;margin-bottom:5px;}
+.set-sec{margin-bottom:22px;}
+.set-sec h3{font-family:'Lora',serif;font-size:13px;font-weight:400;color:var(--text3);letter-spacing:.5px;text-transform:uppercase;margin-bottom:12px;}
+.set-fields{display:flex;flex-direction:column;gap:11px;max-width:340px;}
+.set-field label{font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--text3);display:block;margin-bottom:5px;}
 .set-field input{width:100%;background:var(--input-bg);border:1px solid var(--border2);border-radius:8px;padding:10px 12px;font-family:'Inter',sans-serif;font-size:13px;color:var(--text);outline:none;transition:var(--tr);}
 .set-field input:focus{border-color:var(--warm);}
-.btn-save{background:var(--btn-bg);color:var(--btn-text);border:none;border-radius:8px;padding:10px 20px;cursor:pointer;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;margin-top:6px;transition:opacity .2s,background .3s,color .3s;}
-.btn-save:hover{opacity:.82;}
-.btn-danger{background:var(--red-bg);border:1px solid var(--red-bd);color:var(--red);border-radius:8px;padding:9px 16px;cursor:pointer;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;}
-.btn-danger:hover{background:var(--red);color:#fff;}
-.divider{border:none;border-top:1px solid var(--border);margin:22px 0;}
+.btn-save{background:var(--btn-bg);color:var(--btn-text);border:none;border-radius:8px;padding:10px 18px;cursor:pointer;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;margin-top:6px;min-height:42px;}
+.btn-danger{background:var(--red-bg);border:1px solid var(--red-bd);color:var(--red);border-radius:8px;padding:9px 15px;cursor:pointer;font-family:'Inter',sans-serif;font-size:12px;font-weight:600;}
+.divider{border:none;border-top:1px solid var(--border);margin:20px 0;}
+
+/* MODAL */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:500;display:flex;align-items:flex-end;justify-content:center;padding:0;opacity:0;pointer-events:none;transition:opacity .3s;}
+.overlay.open{opacity:1;pointer-events:all;}
+.modal{background:var(--card);border-radius:20px 20px 0 0;padding:24px 20px 36px;width:100%;max-width:560px;max-height:88vh;overflow-y:auto;-webkit-overflow-scrolling:touch;box-shadow:0 -4px 40px rgba(0,0,0,0.2);transition:background .3s;transform:translateY(30px);transition:transform .3s ease,opacity .3s,background .3s;}
+.overlay.open .modal{transform:translateY(0);}
+.modal-hd{font-family:'Lora',serif;font-size:18px;font-weight:400;color:var(--text);margin-bottom:18px;display:flex;align-items:center;justify-content:space-between;}
+.modal-close{background:none;border:none;cursor:pointer;font-size:17px;color:var(--text3);min-width:36px;min-height:36px;display:flex;align-items:center;justify-content:center;}
+.fg{display:grid;grid-template-columns:1fr 1fr;gap:11px;}
+.ff{display:flex;flex-direction:column;gap:5px;}
+.ff.s2{grid-column:span 2;}
+.ff label{font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--text3);}
+.ff input,.ff select{background:var(--input-bg);border:1px solid var(--border2);border-radius:8px;padding:9px 11px;font-family:'Inter',sans-serif;font-size:13px;color:var(--text);outline:none;width:100%;min-height:40px;transition:var(--tr);}
+.ff input:focus,.ff select:focus{border-color:var(--warm);}
+.ff select option{background:var(--bg2);color:var(--text);}
+.fsec{font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--warm);grid-column:span 2;padding-top:6px;padding-bottom:4px;border-bottom:1px solid var(--border);margin-top:4px;}
+.modal-ft{display:flex;justify-content:flex-end;gap:9px;margin-top:18px;padding-top:14px;border-top:1px solid var(--border);}
+.btn-cancel{background:none;border:1px solid var(--border2);color:var(--text2);border-radius:8px;padding:9px 15px;cursor:pointer;font-family:'Inter',sans-serif;font-size:13px;font-weight:500;min-height:42px;}
+.btn-submit{background:var(--btn-bg);color:var(--btn-text);border:none;border-radius:8px;padding:9px 18px;cursor:pointer;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;min-height:42px;}
 
 /* EMPTY */
-.empty{text-align:center;padding:36px 16px;color:var(--text3);}
-.empty-icon{font-size:36px;margin-bottom:10px;}
-.empty p{font-size:14px;line-height:1.6;}
+.empty{text-align:center;padding:32px 14px;color:var(--text3);}
+.empty-icon{font-size:34px;margin-bottom:8px;}
+.empty p{font-size:13px;line-height:1.6;}
 
 /* TOAST */
-#toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:var(--text);color:var(--bg);padding:11px 22px;border-radius:10px;font-size:13px;font-weight:600;opacity:0;transition:opacity .3s;pointer-events:none;z-index:9999;white-space:nowrap;}
+#toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:var(--text);color:var(--bg);padding:10px 20px;border-radius:10px;font-size:13px;font-weight:600;opacity:0;transition:opacity .3s;pointer-events:none;z-index:9999;white-space:nowrap;max-width:90vw;text-align:center;}
 #toast.show{opacity:1;}
 
-@media(max-width:600px){
+@media(max-width:480px){
   .fg{grid-template-columns:1fr;}
   .ff.s2{grid-column:span 1;}
   .fsec{grid-column:span 1;}
-  nav{padding:12px 14px;}
+  .stu-cards-grid{grid-template-columns:1fr;}
 }
 </style>
 </head>
 <body>
 
+<!-- ═══ PIN OVERLAY ═══ -->
+<div id="pin-overlay">
+  <div class="pin-icon" id="pin-icon">🔐</div>
+  <div class="pin-greeting" id="pin-greeting"></div>
+  <div class="pin-greeting-en" id="pin-greeting-en"></div>
+  <div class="pin-name">नमस्ते, Sangeetha Singh 🙏</div>
+  <div class="pin-datetime" id="pin-datetime"></div>
+  <div class="pin-dots">
+    <div class="pin-dot" id="d0"></div>
+    <div class="pin-dot" id="d1"></div>
+    <div class="pin-dot" id="d2"></div>
+    <div class="pin-dot" id="d3"></div>
+    <div class="pin-dot" id="d4"></div>
+  </div>
+  <div class="keypad">
+    <div class="key" onclick="kp('1')"><span class="kn">1</span></div>
+    <div class="key" onclick="kp('2')"><span class="kn">2</span><span class="kl">ABC</span></div>
+    <div class="key" onclick="kp('3')"><span class="kn">3</span><span class="kl">DEF</span></div>
+    <div class="key" onclick="kp('4')"><span class="kn">4</span><span class="kl">GHI</span></div>
+    <div class="key" onclick="kp('5')"><span class="kn">5</span><span class="kl">JKL</span></div>
+    <div class="key" onclick="kp('6')"><span class="kn">6</span><span class="kl">MNO</span></div>
+    <div class="key" onclick="kp('7')"><span class="kn">7</span><span class="kl">PQRS</span></div>
+    <div class="key" onclick="kp('8')"><span class="kn">8</span><span class="kl">TUV</span></div>
+    <div class="key" onclick="kp('9')"><span class="kn">9</span><span class="kl">WXYZ</span></div>
+    <div class="key empty"></div>
+    <div class="key" onclick="kp('0')"><span class="kn">0</span></div>
+    <div class="key del" onclick="kpDel()">⌫</div>
+  </div>
+  <div class="pin-error" id="pin-error">❌ Incorrect PIN. Try again.</div>
+</div>
+
+<!-- ═══ GREETING FLASH ═══ -->
+<div id="greet-flash">
+  <div class="gf-icon" id="gf-icon"></div>
+  <div class="gf-hi" id="gf-hi"></div>
+  <div class="gf-hi-en" id="gf-hi-en"></div>
+  <div class="gf-name">Sangeetha Singh 🙏</div>
+</div>
+
+<!-- ═══ APP ═══ -->
 <nav>
   <a class="nav-logo" href="index.html">
     <div class="nav-mark">🏫</div>
@@ -235,9 +387,9 @@ input[type="date"]{background:var(--card);border:1px solid var(--border2);border
 </nav>
 
 <div class="tabs">
-  <button class="tab active" onclick="showTab('attendance',this)">📋 Attendance</button>
-  <button class="tab" onclick="showTab('classlist',this)">👩‍🎓 Class List</button>
-  <button class="tab" onclick="showTab('studentdetails',this)">📁 Student Details</button>
+  <button class="tab active" onclick="showTab('attendance',this)">📋 उपस्थिति</button>
+  <button class="tab" onclick="showTab('classlist',this)">👩‍🎓 वर्ग सूची</button>
+  <button class="tab" onclick="showTab('studentdetails',this)">📁 छात्र विवरण</button>
   <button class="tab" onclick="showTab('calendar',this)">📅 Calendar</button>
   <button class="tab" onclick="showTab('report',this)">📊 Report</button>
   <button class="tab" onclick="showTab('settings',this)">⚙️ Settings</button>
@@ -245,83 +397,92 @@ input[type="date"]{background:var(--card);border:1px solid var(--border2);border
 
 <div class="main">
 
-  <!-- ── ATTENDANCE ── -->
+  <!-- ATTENDANCE -->
   <div class="panel active" id="panel-attendance">
     <div class="card">
       <div class="date-row">
         <button class="arrow-btn" onclick="chDate(-1)">←</button>
-        <div class="date-label" id="date-label"></div>
+        <div>
+          <div class="date-label" id="date-label"></div>
+          <span class="date-label-hi" id="date-label-hi"></span>
+        </div>
         <input type="date" id="date-picker" onchange="onPick()">
-        <button class="today-btn" onclick="goToday()">Today</button>
+        <button class="today-btn" onclick="goToday()">आज</button>
         <button class="arrow-btn" onclick="chDate(1)">→</button>
       </div>
     </div>
+
     <div class="card">
-      <div class="card-title">☀️ Morning Attendance</div>
+      <div class="card-title">☀️ प्रातः उपस्थिति <span class="card-title-hi">Morning Attendance</span></div>
       <div class="mall-row">
-        <label>Mark all:</label>
-        <button class="mall-p" onclick="markAll('m','P')">✔ All Present</button>
-        <button class="mall-a" onclick="markAll('m','A')">✘ All Absent</button>
+        <label>सभी:</label>
+        <button class="mall-p" onclick="markAll('m','P')">✔ सभी उपस्थित</button>
+        <button class="mall-a" onclick="markAll('m','A')">✘ सभी अनुपस्थित</button>
       </div>
-      <div class="sess-head"><span>Student</span><span>Present</span><span>Absent</span></div>
+      <div class="sess-head">
+        <span>छात्र / Student</span>
+        <span class="hi">उपस्थित<br>Present</span>
+        <span class="hi">अनुपस्थित<br>Absent</span>
+      </div>
       <div id="m-list"></div>
       <div class="badges" id="m-badges"></div>
     </div>
+
     <div class="card">
-      <div class="card-title">🌤️ Lunch Attendance</div>
+      <div class="card-title">🌤️ मध्याह्न उपस्थिति <span class="card-title-hi">Lunch Attendance</span></div>
       <div class="mall-row">
-        <label>Mark all:</label>
-        <button class="mall-p" onclick="markAll('l','P')">✔ All Present</button>
-        <button class="mall-a" onclick="markAll('l','A')">✘ All Absent</button>
+        <label>सभी:</label>
+        <button class="mall-p" onclick="markAll('l','P')">✔ सभी उपस्थित</button>
+        <button class="mall-a" onclick="markAll('l','A')">✘ सभी अनुपस्थित</button>
       </div>
-      <div class="sess-head"><span>Student</span><span>Present</span><span>Absent</span></div>
+      <div class="sess-head">
+        <span>छात्र / Student</span>
+        <span class="hi">उपस्थित<br>Present</span>
+        <span class="hi">अनुपस्थित<br>Absent</span>
+      </div>
       <div id="l-list"></div>
       <div class="badges" id="l-badges"></div>
     </div>
   </div>
 
-  <!-- ── CLASS LIST ── -->
+  <!-- CLASS LIST -->
   <div class="panel" id="panel-classlist">
     <div class="card">
-      <div class="card-title">➕ Add Student to Class</div>
+      <div class="card-title">➕ छात्र जोड़ें <span class="card-title-hi">Add Student</span></div>
       <div class="add-row">
-        <input type="text" id="new-stu" placeholder="Enter student's full name…" onkeydown="if(event.key==='Enter')addStu()">
-        <button class="btn-add" onclick="addStu()">Add</button>
+        <input type="text" id="new-stu" placeholder="छात्र का पूरा नाम…" onkeydown="if(event.key==='Enter')addStu()">
+        <button class="btn-add" onclick="addStu()">जोड़ें</button>
       </div>
       <div class="card-title" style="margin-top:4px;">
-        Class Roll List &nbsp;<span id="stu-count" style="font-size:12px;color:var(--text3);font-family:'Inter',sans-serif;"></span>
+        कक्षा नामावली <span id="stu-count" style="font-size:11px;color:var(--text3);font-family:'Inter',sans-serif;"></span>
       </div>
       <div id="stu-list"></div>
     </div>
   </div>
 
-  <!-- ── STUDENT DETAILS ── -->
+  <!-- STUDENT DETAILS -->
   <div class="panel" id="panel-studentdetails">
     <div class="sdet-topbar">
-      <div class="sdet-topbar-left">Student Records <span id="sdet-count"></span></div>
+      <div class="sdet-title">छात्र विवरण <span id="sdet-count"></span></div>
       <div class="search-wrap">
         <span class="search-icon">🔍</span>
-        <input type="text" id="sdet-search" placeholder="Search name…" oninput="renderDetCards()">
+        <input type="text" id="sdet-search" placeholder="नाम खोजें…" oninput="renderDetCards()">
       </div>
-      <button class="btn-add-stu" onclick="openModal()">+ Add Record</button>
+      <button class="btn-add-stu" onclick="openModal()">+ जोड़ें</button>
     </div>
     <div class="stu-cards-grid" id="stu-cards-grid"></div>
   </div>
 
-  <!-- ── CALENDAR ── -->
+  <!-- CALENDAR -->
   <div class="panel" id="panel-calendar">
     <div class="card">
-      <div class="card-title">📅 Attendance Calendar</div>
+      <div class="card-title">📅 उपस्थिति कैलेंडर</div>
       <div class="cal-nav">
         <button onclick="calPrev()">←</button>
         <div class="cal-month" id="cal-month"></div>
         <button onclick="calNext()">→</button>
       </div>
       <div class="cal-grid" id="cal-grid"></div>
-      <div class="cal-legend">
-        <span><span class="leg" style="background:var(--text)"></span> Today</span>
-        <span><span class="leg" style="background:var(--green-bg);border:1px solid var(--green-bd)"></span> Recorded</span>
-      </div>
     </div>
     <div class="card" id="cal-detail" style="display:none">
       <div class="card-title" id="cal-detail-title"></div>
@@ -329,42 +490,41 @@ input[type="date"]{background:var(--card);border:1px solid var(--border2);border
     </div>
   </div>
 
-  <!-- ── REPORT ── -->
+  <!-- REPORT -->
   <div class="panel" id="panel-report">
     <div class="card">
-      <div class="card-title">📊 Attendance Summary</div>
+      <div class="card-title">📊 उपस्थिति रिपोर्ट</div>
       <div id="report-body" class="report-wrap"></div>
     </div>
   </div>
 
-  <!-- ── SETTINGS ── -->
+  <!-- SETTINGS -->
   <div class="panel" id="panel-settings">
     <div class="card">
       <div class="set-sec">
-        <h3>🔑 Change Credentials</h3>
+        <h3>🔑 Change Login Credentials</h3>
         <div class="set-fields">
           <div class="set-field"><label>New Username</label><input type="text" id="new-u" placeholder="New username"></div>
           <div class="set-field"><label>New Password</label><input type="password" id="new-pw" placeholder="New password"></div>
-          <div class="set-field"><label>Confirm Password</label><input type="password" id="conf-pw" placeholder="Confirm password"></div>
+          <div class="set-field"><label>Confirm Password</label><input type="password" id="conf-pw" placeholder="Confirm"></div>
         </div>
-        <button class="btn-save" onclick="saveCreds()">Save Credentials</button>
+        <button class="btn-save" onclick="saveCreds()">Save</button>
       </div>
       <hr class="divider">
       <div class="set-sec">
         <h3>⚠️ Danger Zone</h3>
-        <p style="font-size:13px;color:var(--text3);margin-bottom:12px;">Permanently deletes all attendance records. Student names and details are kept.</p>
-        <button class="btn-danger" onclick="clearRecs()">🗑 Clear All Attendance Records</button>
+        <p style="font-size:12px;color:var(--text3);margin-bottom:10px;">Deletes all attendance records. Student names and details are kept.</p>
+        <button class="btn-danger" onclick="clearRecs()">🗑 Clear All Records</button>
       </div>
     </div>
   </div>
-
 </div>
 
-<!-- ── STUDENT DETAILS MODAL ── -->
+<!-- MODAL (bottom sheet on mobile) -->
 <div class="overlay" id="overlay" onclick="overlayClick(event)">
   <div class="modal">
     <div class="modal-hd">
-      <span id="modal-title">Add Student Record</span>
+      <span id="modal-title">छात्र विवरण जोड़ें</span>
       <button class="modal-close" onclick="closeModal()">✕</button>
     </div>
     <div class="fg">
@@ -376,25 +536,22 @@ input[type="date"]{background:var(--card);border:1px solid var(--border2);border
       <div class="ff"><label>Gender</label><select id="f-gender"><option value="">Select</option><option>Male</option><option>Female</option><option>Other</option></select></div>
       <div class="ff"><label>Admission Date</label><input type="date" id="f-admdate"></div>
       <div class="ff"><label>Class / Section</label><input type="text" id="f-class" placeholder="e.g. 5-A"></div>
-
-      <div class="fsec">Identity Documents</div>
-      <div class="ff"><label>Apaar ID</label><input type="text" id="f-apaar" placeholder="12-digit Apaar ID"></div>
-      <div class="ff"><label>PAN Number</label><input type="text" id="f-pan" placeholder="ABCDE1234F"></div>
-
+      <div class="fsec">Identity</div>
+      <div class="ff"><label>Apaar ID</label><input type="text" id="f-apaar" placeholder="Apaar ID"></div>
+      <div class="ff"><label>PAN Number</label><input type="text" id="f-pan" placeholder="PAN"></div>
       <div class="fsec">Parent / Guardian</div>
-      <div class="ff"><label>Father's Name</label><input type="text" id="f-father" placeholder="Father's full name"></div>
-      <div class="ff"><label>Mother's Name</label><input type="text" id="f-mother" placeholder="Mother's full name"></div>
-      <div class="ff"><label>Father's Mobile</label><input type="tel" id="f-fmob" placeholder="10-digit number"></div>
-      <div class="ff"><label>Mother's Mobile</label><input type="tel" id="f-mmob" placeholder="10-digit number"></div>
-
+      <div class="ff"><label>Father's Name</label><input type="text" id="f-father" placeholder="Father"></div>
+      <div class="ff"><label>Mother's Name</label><input type="text" id="f-mother" placeholder="Mother"></div>
+      <div class="ff"><label>Father's Mobile</label><input type="tel" id="f-fmob" placeholder="Mobile"></div>
+      <div class="ff"><label>Mother's Mobile</label><input type="tel" id="f-mmob" placeholder="Mobile"></div>
       <div class="fsec">Address</div>
-      <div class="ff s2"><label>Street / Colony / Village</label><input type="text" id="f-addr" placeholder="Address line"></div>
+      <div class="ff s2"><label>Street / Colony</label><input type="text" id="f-addr" placeholder="Address"></div>
       <div class="ff"><label>City</label><input type="text" id="f-city" placeholder="City"></div>
-      <div class="ff"><label>Pin Code</label><input type="text" id="f-pin" placeholder="6-digit pin"></div>
+      <div class="ff"><label>Pin Code</label><input type="text" id="f-pin" placeholder="Pin"></div>
     </div>
     <div class="modal-ft">
       <button class="btn-cancel" onclick="closeModal()">Cancel</button>
-      <button class="btn-submit" onclick="submitForm()">Save Record</button>
+      <button class="btn-submit" onclick="submitForm()">Save</button>
     </div>
   </div>
 </div>
@@ -403,168 +560,209 @@ input[type="date"]{background:var(--card);border:1px solid var(--border2);border
 
 <script>
 // ── AUTH ──
-if (!sessionStorage.getItem('vs_auth')) window.location.href = 'login.html';
+if(!sessionStorage.getItem('vs_auth')) window.location.href='login.html';
 
-// ── DATA KEYS ──
-const DB     = 'vs_db';
-const CR     = 'vs_creds';
-const SD_KEY = 'vs_students_details';
-const DCREDS = { username:'Devasangeeta', password:'sangeeta@99' };
+// ── PIN ──
+const CORRECT_PIN = '58690';
+let pinEntry = '';
 
-let db = loadDB();
-let studentDetails = loadSD();
-let cur = todayStr();
-let calY, calM;
-let editId = null;
+function getGreeting() {
+  const h = new Date().getHours();
+  if(h>=5 && h<12) return {hi:'सुप्रभात 🌅', en:'Suprabhat — Good Morning', icon:'🌄'};
+  if(h>=12 && h<17) return {hi:'शुभ दोपहर 🌞', en:'Shubh Dopahar — Good Afternoon', icon:'☀️'};
+  if(h>=17 && h<20) return {hi:'शुभ संध्या 🌇', en:'Shubh Sandhya — Good Evening', icon:'🌆'};
+  return {hi:'शुभ रात्रि 🌙', en:'Shubh Ratri — Good Night', icon:'🌙'};
+}
 
-const now = new Date(); calY = now.getFullYear(); calM = now.getMonth();
+function updatePinDateTime() {
+  const now = new Date();
+  const days = ['रविवार','सोमवार','मंगलवार','बुधवार','गुरुवार','शुक्रवार','शनिवार'];
+  const months = ['जनवरी','फरवरी','मार्च','अप्रैल','मई','जून','जुलाई','अगस्त','सितंबर','अक्तूबर','नवंबर','दिसंबर'];
+  const h = now.getHours(), m = now.getMinutes();
+  const ampm = h >= 12 ? 'PM' : 'AM';
+  const h12 = h % 12 || 12;
+  const timeStr = `${h12}:${String(m).padStart(2,'0')} ${ampm}`;
+  document.getElementById('pin-datetime').textContent =
+    `${days[now.getDay()]}, ${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()} · ${timeStr}`;
+}
 
-function loadDB() { try { return JSON.parse(localStorage.getItem(DB)) || {students:[],records:{}}; } catch(e) { return {students:[],records:{}}; } }
-function saveDB() { localStorage.setItem(DB, JSON.stringify(db)); }
-function loadSD() { try { return JSON.parse(localStorage.getItem(SD_KEY)) || []; } catch(e) { return []; } }
-function saveSD() { localStorage.setItem(SD_KEY, JSON.stringify(studentDetails)); }
-function getCreds() { try { return JSON.parse(localStorage.getItem(CR)) || DCREDS; } catch(e) { return DCREDS; } }
-function todayStr() { return new Date().toISOString().slice(0,10); }
-function fmtDate(s) { return new Date(s+'T00:00:00').toLocaleDateString('en-IN',{weekday:'long',year:'numeric',month:'long',day:'numeric'}); }
-function fmtShort(s) { return new Date(s+'T00:00:00').toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}); }
+function initPin() {
+  const g = getGreeting();
+  document.getElementById('pin-greeting').textContent = g.hi;
+  document.getElementById('pin-greeting-en').textContent = g.en;
+  document.getElementById('pin-icon').textContent = g.icon;
+  document.getElementById('gf-icon').textContent = g.icon;
+  document.getElementById('gf-hi').textContent = g.hi;
+  document.getElementById('gf-hi-en').textContent = g.en;
+  updatePinDateTime();
+  setInterval(updatePinDateTime, 10000);
+}
 
-document.getElementById('nav-date').textContent = fmtShort(todayStr());
+function kp(n) {
+  if(pinEntry.length >= 5) return;
+  pinEntry += n;
+  updateDots();
+  if(pinEntry.length === 5) {
+    setTimeout(() => checkPin(), 160);
+  }
+}
+
+function kpDel() {
+  if(!pinEntry.length) return;
+  pinEntry = pinEntry.slice(0,-1);
+  updateDots();
+  const err = document.getElementById('pin-error');
+  err.classList.remove('show');
+}
+
+function updateDots() {
+  for(let i=0;i<5;i++) {
+    const d = document.getElementById('d'+i);
+    if(i < pinEntry.length) d.classList.add('filled');
+    else d.classList.remove('filled');
+  }
+}
+
+function checkPin() {
+  if(pinEntry === CORRECT_PIN) {
+    // Success — show greeting flash then reveal app
+    const overlay = document.getElementById('pin-overlay');
+    const flash = document.getElementById('greet-flash');
+    overlay.classList.add('hiding');
+    setTimeout(() => {
+      overlay.classList.add('hidden');
+      flash.classList.add('show');
+      setTimeout(() => {
+        flash.style.transition = 'opacity .5s';
+        flash.style.opacity = '0';
+        setTimeout(() => {
+          flash.style.display = 'none';
+        }, 500);
+      }, 1800);
+    }, 400);
+  } else {
+    pinEntry = '';
+    updateDots();
+    const err = document.getElementById('pin-error');
+    err.classList.remove('show');
+    void err.offsetWidth;
+    err.classList.add('show');
+    // Shake dots
+    const dotsEl = document.querySelector('.pin-dots');
+    dotsEl.style.animation = 'errShake .4s ease';
+    setTimeout(() => dotsEl.style.animation = '', 400);
+  }
+}
+
+// ── DATA ──
+const DB='vs_db',CR='vs_creds',SD='vs_students_details';
+const DCREDS={username:'Devasangeeta',password:'sangeeta@99'};
+let db=loadDB(),studentDetails=loadSD(),cur=todayStr(),editId=null;
+let calY,calM;
+const now2=new Date();calY=now2.getFullYear();calM=now2.getMonth();
+
+function loadDB(){try{return JSON.parse(localStorage.getItem(DB))||{students:[],records:{}};}catch(e){return{students:[],records:{}};}}
+function saveDB(){localStorage.setItem(DB,JSON.stringify(db));}
+function loadSD(){try{return JSON.parse(localStorage.getItem(SD))||[];}catch(e){return[];}}
+function saveSD(){localStorage.setItem(SD,JSON.stringify(studentDetails));}
+function getCreds(){try{return JSON.parse(localStorage.getItem(CR))||DCREDS;}catch(e){return DCREDS;}}
+function todayStr(){return new Date().toISOString().slice(0,10);}
+
+function fmtDate(s){return new Date(s+'T00:00:00').toLocaleDateString('en-IN',{weekday:'long',year:'numeric',month:'long',day:'numeric'});}
+function fmtDateHi(s){return new Date(s+'T00:00:00').toLocaleDateString('hi-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'});}
+function fmtShort(s){return new Date(s+'T00:00:00').toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});}
+
+document.getElementById('nav-date').textContent=fmtShort(todayStr());
+initPin();
 renderAttendance();
 
 // ── TABS ──
-function showTab(name, btn) {
+function showTab(name,btn){
   document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
   document.getElementById('panel-'+name).classList.add('active');
   btn.classList.add('active');
-  if(name==='attendance') renderAttendance();
-  if(name==='classlist') renderClassList();
-  if(name==='studentdetails') renderDetCards();
-  if(name==='calendar') renderCalendar();
-  if(name==='report') renderReport();
+  if(name==='attendance')renderAttendance();
+  if(name==='classlist')renderClassList();
+  if(name==='studentdetails')renderDetCards();
+  if(name==='calendar')renderCalendar();
+  if(name==='report')renderReport();
 }
 
 // ── ATTENDANCE ──
-function renderAttendance() {
-  document.getElementById('date-label').textContent = fmtDate(cur);
-  document.getElementById('date-picker').value = cur;
-  renderSess('m'); renderSess('l');
+function renderAttendance(){
+  document.getElementById('date-label').textContent=fmtDate(cur);
+  document.getElementById('date-label-hi').textContent=fmtDateHi(cur);
+  document.getElementById('date-picker').value=cur;
+  renderSess('m');renderSess('l');
 }
-function renderSess(s) {
-  const list=document.getElementById(s+'-list'), bdg=document.getElementById(s+'-badges');
-  if(!db.students.length){list.innerHTML='<div class="empty"><div class="empty-icon">👩‍🎓</div><p>No students — add them in <strong>Class List</strong> tab.</p></div>';bdg.innerHTML='';return;}
-  const rec=db.records[cur]||{};
-  let html='',P=0,A=0,U=0;
+function renderSess(s){
+  const list=document.getElementById(s+'-list'),bdg=document.getElementById(s+'-badges');
+  if(!db.students.length){list.innerHTML='<div class="empty"><div class="empty-icon">👩‍🎓</div><p>कोई छात्र नहीं — <strong>वर्ग सूची</strong> टैब में जोड़ें।</p></div>';bdg.innerHTML='';return;}
+  const rec=db.records[cur]||{};let html='',P=0,A=0,U=0;
   db.students.forEach((st,i)=>{
     const v=rec[s+'_'+i]||'';
     if(v==='P')P++;else if(v==='A')A++;else U++;
     html+=`<div class="stu-row">
-      <div><div class="sname">${st}</div><div class="sroll">#${i+1}</div></div>
-      <div class="att-cell"><button class="att-btn P ${v==='P'?'on':''}" onclick="mark('${s}',${i},'P')">✔ P</button></div>
-      <div class="att-cell"><button class="att-btn A ${v==='A'?'on':''}" onclick="mark('${s}',${i},'A')">✘ A</button></div>
+      <div><div class="sname">${st}</div><div class="sroll">क्रमांक #${i+1}</div></div>
+      <div class="att-cell"><button class="att-btn P ${v==='P'?'on':''}" onclick="mark('${s}',${i},'P')">✔ उप.</button></div>
+      <div class="att-cell"><button class="att-btn A ${v==='A'?'on':''}" onclick="mark('${s}',${i},'A')">✘ अनु.</button></div>
     </div>`;
   });
   list.innerHTML=html;
-  bdg.innerHTML=`<span class="badge bg-g">✔ ${P} Present</span><span class="badge bg-r">✘ ${A} Absent</span><span class="badge bg-n">— ${U} Unmarked</span><span class="badge bg-n">Total ${db.students.length}</span>`;
+  bdg.innerHTML=`<span class="badge bg-g">✔ उपस्थित: ${P}</span><span class="badge bg-r">✘ अनुपस्थित: ${A}</span><span class="badge bg-n">— अचिह्नित: ${U}</span><span class="badge bg-n">कुल: ${db.students.length}</span>`;
 }
-function mark(s,i,v){
-  if(!db.records[cur])db.records[cur]={};
-  const k=s+'_'+i; db.records[cur][k]=db.records[cur][k]===v?'':v;
-  saveDB();renderSess(s);
-}
-function markAll(s,v){
-  if(!db.records[cur])db.records[cur]={};
-  db.students.forEach((_,i)=>db.records[cur][s+'_'+i]=v);
-  saveDB();renderSess(s);toast(v==='P'?'✔ All Present':'✘ All Absent');
-}
+function mark(s,i,v){if(!db.records[cur])db.records[cur]={};const k=s+'_'+i;db.records[cur][k]=db.records[cur][k]===v?'':v;saveDB();renderSess(s);}
+function markAll(s,v){if(!db.records[cur])db.records[cur]={};db.students.forEach((_,i)=>db.records[cur][s+'_'+i]=v);saveDB();renderSess(s);toast(v==='P'?'✔ सभी उपस्थित':'✘ सभी अनुपस्थित');}
 function chDate(d){const dt=new Date(cur+'T00:00:00');dt.setDate(dt.getDate()+d);cur=dt.toISOString().slice(0,10);renderAttendance();}
 function goToday(){cur=todayStr();renderAttendance();}
 function onPick(){const v=document.getElementById('date-picker').value;if(v){cur=v;renderAttendance();}}
 
 // ── CLASS LIST ──
-function addStu(){
-  const inp=document.getElementById('new-stu'),name=inp.value.trim();
-  if(!name){toast('Please enter a name');return;}
-  if(db.students.find(s=>s.toLowerCase()===name.toLowerCase())){toast('Already in list!');return;}
-  db.students.push(name);saveDB();inp.value='';renderClassList();toast('✔ '+name+' added');
-}
-function rmStu(i){
-  if(!confirm('Remove '+db.students[i]+'?\n\nPast attendance records are kept.'))return;
-  const n=db.students[i];db.students.splice(i,1);saveDB();renderClassList();toast(n+' removed');
-}
+function addStu(){const inp=document.getElementById('new-stu'),name=inp.value.trim();if(!name){toast('कृपया नाम दर्ज करें');return;}if(db.students.find(s=>s.toLowerCase()===name.toLowerCase())){toast('पहले से सूची में है!');return;}db.students.push(name);saveDB();inp.value='';renderClassList();toast('✔ '+name+' जोड़ा गया');}
+function rmStu(i){if(!confirm(db.students[i]+' को हटाएं?'))return;const n=db.students[i];db.students.splice(i,1);saveDB();renderClassList();toast(n+' हटाया गया');}
 function renderClassList(){
   const n=db.students.length;
-  document.getElementById('stu-count').textContent=n?`(${n} student${n>1?'s':''})`:'';
+  document.getElementById('stu-count').textContent=n?`(${n} छात्र)`:'';
   const c=document.getElementById('stu-list');
-  if(!n){c.innerHTML='<div class="empty"><div class="empty-icon">✏️</div><p>No students yet. Add the first one above!</p></div>';return;}
-  c.innerHTML=db.students.map((s,i)=>`
-    <div class="stu-item">
-      <div class="stu-item-l"><div class="stu-num">${i+1}</div><div class="stu-item-name">${s}</div></div>
-      <button class="btn-rm" onclick="rmStu(${i})">Remove</button>
-    </div>`).join('');
+  if(!n){c.innerHTML='<div class="empty"><div class="empty-icon">✏️</div><p>अभी कोई छात्र नहीं। ऊपर जोड़ें!</p></div>';return;}
+  c.innerHTML=db.students.map((s,i)=>`<div class="stu-item"><div class="stu-item-l"><div class="stu-num">${i+1}</div><div class="stu-item-name">${s}</div></div><button class="btn-rm" onclick="rmStu(${i})">हटाएं</button></div>`).join('');
 }
 
 // ── STUDENT DETAILS ──
 function renderDetCards(){
   const q=document.getElementById('sdet-search').value.trim().toLowerCase();
-  const filtered=q?studentDetails.filter(s=>s.name.toLowerCase().includes(q)):studentDetails;
-  document.getElementById('sdet-count').textContent=studentDetails.length?`(${studentDetails.length})`:'' ;
-  const grid=document.getElementById('stu-cards-grid');
-  if(!studentDetails.length){grid.innerHTML='<div class="empty" style="grid-column:1/-1"><div class="empty-icon">📁</div><p>No student records yet.<br>Click <strong>+ Add Record</strong> to add the first one.</p></div>';return;}
-  if(!filtered.length){grid.innerHTML='<div class="empty" style="grid-column:1/-1"><div class="empty-icon">🔍</div><p>No match for "<strong>'+q+'</strong>"</p></div>';return;}
-  grid.innerHTML=filtered.map(s=>{
-    const initials=s.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
-    const rows=[
-      ['Adm. No',s.admno],['Serial',s.serial],['DOB',s.dob?fmtShort(s.dob):''],
-      ['Gender',s.gender],['Class',s.class],['Apaar ID',s.apaar],['PAN',s.pan],
-      ['Father',s.father],['Mother',s.mother],
-      ['Father Mob.',s.fmob],['Mother Mob.',s.mmob],
-      ['Address',[s.addr,s.city,s.pin].filter(Boolean).join(', ')],
-    ].filter(([,v])=>v);
-    return `<div class="stu-det-card">
-      <div class="sdc-top">
-        <div class="sdc-avatar">${initials}</div>
-        <div class="sdc-actions">
-          <button class="btn-edit" onclick="openModal('${s.id}')">Edit</button>
-          <button class="btn-del" onclick="delDet('${s.id}')">✕</button>
-        </div>
-      </div>
-      <div class="sdc-name">${s.name}</div>
-      <div class="sdc-sub">${s.admdate?'Admitted '+fmtShort(s.admdate):'Student Record'}</div>
-      <div class="sdc-fields">${rows.map(([l,v])=>`<div class="sdc-field"><span class="sdc-label">${l}</span><span class="sdc-val">${v}</span></div>`).join('')}${!rows.length?'<span style="font-size:12px;color:var(--text3);font-style:italic">No details added yet</span>':''}</div>
-    </div>`;
+  const f=q?studentDetails.filter(s=>s.name.toLowerCase().includes(q)):studentDetails;
+  document.getElementById('sdet-count').textContent=studentDetails.length?`(${studentDetails.length})`:'';
+  const g=document.getElementById('stu-cards-grid');
+  if(!studentDetails.length){g.innerHTML='<div class="empty" style="grid-column:1/-1"><div class="empty-icon">📁</div><p>कोई छात्र विवरण नहीं।<br><strong>+ जोड़ें</strong> पर क्लिक करें।</p></div>';return;}
+  if(!f.length){g.innerHTML='<div class="empty" style="grid-column:1/-1"><div class="empty-icon">🔍</div><p>"'+q+'" नहीं मिला।</p></div>';return;}
+  g.innerHTML=f.map(s=>{
+    const ini=s.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+    const rows=[['Adm.',s.admno],['Serial',s.serial],['DOB',s.dob?fmtShort(s.dob):''],['Gender',s.gender],['Class',s.class],['Apaar',s.apaar],['PAN',s.pan],['Father',s.father],['Mother',s.mother],['F.Mob',s.fmob],['M.Mob',s.mmob],['Address',[s.addr,s.city,s.pin].filter(Boolean).join(', ')]].filter(([,v])=>v);
+    return `<div class="stu-det-card"><div class="sdc-top"><div class="sdc-avatar">${ini}</div><div class="sdc-actions"><button class="btn-edit" onclick="openModal('${s.id}')">Edit</button><button class="btn-del" onclick="delDet('${s.id}')">✕</button></div></div><div class="sdc-name">${s.name}</div><div class="sdc-sub">${s.admdate?'Admitted '+fmtShort(s.admdate):'Student'}</div><div class="sdc-fields">${rows.map(([l,v])=>`<div class="sdc-field"><span class="sdc-label">${l}</span><span class="sdc-val">${v}</span></div>`).join('')}</div></div>`;
   }).join('');
 }
-function delDet(id){
-  const s=studentDetails.find(x=>x.id===id);
-  if(!s||!confirm('Remove record for '+s.name+'?'))return;
-  studentDetails=studentDetails.filter(x=>x.id!==id);
-  saveSD();renderDetCards();toast(s.name+' record removed');
-}
+function delDet(id){const s=studentDetails.find(x=>x.id===id);if(!s||!confirm(s.name+' का विवरण हटाएं?'))return;studentDetails=studentDetails.filter(x=>x.id!==id);saveSD();renderDetCards();toast(s.name+' हटाया गया');}
 
 // ── MODAL ──
-const FIELDS=['serial','admno','name','dob','gender','admdate','class','apaar','pan','father','mother','fmob','mmob','addr','city','pin'];
+const FLDS=['serial','admno','name','dob','gender','admdate','class','apaar','pan','father','mother','fmob','mmob','addr','city','pin'];
 function openModal(id){
   editId=id||null;
-  document.getElementById('modal-title').textContent=id?'Edit Student Record':'Add Student Record';
-  if(id){const s=studentDetails.find(x=>x.id===id);if(s)FIELDS.forEach(f=>{const el=document.getElementById('f-'+f);if(el)el.value=s[f]||'';});}
-  else FIELDS.forEach(f=>{const el=document.getElementById('f-'+f);if(el)el.value='';});
+  document.getElementById('modal-title').textContent=id?'छात्र विवरण संपादित करें':'छात्र विवरण जोड़ें';
+  if(id){const s=studentDetails.find(x=>x.id===id);if(s)FLDS.forEach(f=>{const el=document.getElementById('f-'+f);if(el)el.value=s[f]||'';});}
+  else FLDS.forEach(f=>{const el=document.getElementById('f-'+f);if(el)el.value='';});
   document.getElementById('overlay').classList.add('open');
-  setTimeout(()=>document.getElementById('f-name').focus(),200);
+  setTimeout(()=>document.getElementById('f-name').focus(),300);
 }
 function closeModal(){document.getElementById('overlay').classList.remove('open');editId=null;}
 function overlayClick(e){if(e.target===document.getElementById('overlay'))closeModal();}
 function submitForm(){
   const name=document.getElementById('f-name').value.trim();
-  if(!name){toast('Please enter the student name');document.getElementById('f-name').focus();return;}
-  const data={name};
-  FIELDS.filter(f=>f!=='name').forEach(f=>{data[f]=document.getElementById('f-'+f).value.trim();});
-  if(editId){
-    const idx=studentDetails.findIndex(s=>s.id===editId);
-    if(idx>-1){studentDetails[idx]={...studentDetails[idx],...data};toast('✔ Record updated');}
-  } else {
-    data.id='sd_'+Date.now();studentDetails.push(data);toast('✔ '+name+' record added');
-  }
+  if(!name){toast('कृपया नाम दर्ज करें');return;}
+  const data={name};FLDS.filter(f=>f!=='name').forEach(f=>{data[f]=document.getElementById('f-'+f).value.trim();});
+  if(editId){const idx=studentDetails.findIndex(s=>s.id===editId);if(idx>-1){studentDetails[idx]={...studentDetails[idx],...data};toast('✔ विवरण अपडेट किया');}}
+  else{data.id='sd_'+Date.now();studentDetails.push(data);toast('✔ '+name+' जोड़ा गया');}
   saveSD();closeModal();renderDetCards();
 }
 
@@ -591,54 +789,28 @@ function calClick(ds){
   cur=ds;renderCalendar();
   const rec=db.records[ds]||{},det=document.getElementById('cal-detail');
   document.getElementById('cal-detail-title').textContent='📋 '+fmtDate(ds);
-  if(!db.students.length){document.getElementById('cal-detail-body').innerHTML='<p style="color:var(--text3);font-size:14px">No students registered.</p>';det.style.display='block';return;}
-  if(!Object.keys(rec).length){document.getElementById('cal-detail-body').innerHTML='<p style="color:var(--text3);font-size:14px">No attendance recorded for this day.</p>';det.style.display='block';return;}
+  if(!db.students.length||!Object.keys(rec).length){document.getElementById('cal-detail-body').innerHTML='<p style="font-size:13px;color:var(--text3)">'+(db.students.length?'इस दिन की उपस्थिति दर्ज नहीं।':'कोई छात्र नहीं।')+'</p>';det.style.display='block';return;}
   let html='<div class="report-wrap"><table class="rtable"><thead><tr><th>#</th><th>Student</th><th>Morning</th><th>Lunch</th></tr></thead><tbody>';
-  db.students.forEach((s,i)=>{
-    const m=rec['m_'+i]||'—',l=rec['l_'+i]||'—';
-    const mc=m==='P'?'color:var(--green);font-weight:600':m==='A'?'color:var(--red);font-weight:600':'color:var(--text3)';
-    const lc=l==='P'?'color:var(--green);font-weight:600':l==='A'?'color:var(--red);font-weight:600':'color:var(--text3)';
-    html+=`<tr><td>${i+1}</td><td><strong>${s}</strong></td><td style="${mc}">${m}</td><td style="${lc}">${l}</td></tr>`;
-  });
-  html+='</tbody></table></div>';
-  document.getElementById('cal-detail-body').innerHTML=html;det.style.display='block';
+  db.students.forEach((s,i)=>{const m=rec['m_'+i]||'—',l=rec['l_'+i]||'—';const mc=m==='P'?'color:var(--green);font-weight:600':m==='A'?'color:var(--red);font-weight:600':'color:var(--text3)';const lc=l==='P'?'color:var(--green);font-weight:600':l==='A'?'color:var(--red);font-weight:600':'color:var(--text3)';html+=`<tr><td>${i+1}</td><td><strong>${s}</strong></td><td style="${mc}">${m}</td><td style="${lc}">${l}</td></tr>`;});
+  html+='</tbody></table></div>';document.getElementById('cal-detail-body').innerHTML=html;det.style.display='block';
 }
 
 // ── REPORT ──
 function renderReport(){
   const body=document.getElementById('report-body');
-  if(!db.students.length){body.innerHTML='<div class="empty"><div class="empty-icon">📊</div><p>No students yet.</p></div>';return;}
+  if(!db.students.length){body.innerHTML='<div class="empty"><div class="empty-icon">📊</div><p>कोई छात्र नहीं।</p></div>';return;}
   const dates=Object.keys(db.records).sort();
-  if(!dates.length){body.innerHTML='<div class="empty"><div class="empty-icon">📊</div><p>No attendance recorded yet.</p></div>';return;}
+  if(!dates.length){body.innerHTML='<div class="empty"><div class="empty-icon">📊</div><p>अभी तक कोई उपस्थिति दर्ज नहीं।</p></div>';return;}
   let html='<table class="rtable"><thead><tr><th>#</th><th>Student</th><th>Mrng P</th><th>Lunch P</th><th>Days</th><th>Mrng%</th><th>Lunch%</th></tr></thead><tbody>';
-  db.students.forEach((s,i)=>{
-    let mp=0,ma=0,lp=0,la=0;
-    dates.forEach(d=>{const r=db.records[d]||{};if(r['m_'+i]==='P')mp++;else if(r['m_'+i]==='A')ma++;if(r['l_'+i]==='P')lp++;else if(r['l_'+i]==='A')la++;});
-    const mt=mp+ma,lt=lp+la;
-    const mpct=mt?Math.round(100*mp/mt):null,lpct=lt?Math.round(100*lp/lt):null;
-    const pc=p=>p===null?'':p>=75?'g':p>=50?'w':'r';
-    html+=`<tr><td>${i+1}</td><td><strong>${s}</strong></td><td>${mp}/${mt||0}</td><td>${lp}/${lt||0}</td><td>${dates.length}</td>
-      <td class="pct ${pc(mpct)}">${mpct!==null?mpct+'%':'—'}</td>
-      <td class="pct ${pc(lpct)}">${lpct!==null?lpct+'%':'—'}</td></tr>`;
-  });
-  html+=`</tbody></table><p style="margin-top:12px;font-size:12px;color:var(--text3)">Based on ${dates.length} day(s) · <span style="color:var(--green);font-weight:600">Green ≥75%</span> · <span style="color:var(--amber);font-weight:600">Amber ≥50%</span> · <span style="color:var(--red);font-weight:600">Red &lt;50%</span></p>`;
+  db.students.forEach((s,i)=>{let mp=0,ma=0,lp=0,la=0;dates.forEach(d=>{const r=db.records[d]||{};if(r['m_'+i]==='P')mp++;else if(r['m_'+i]==='A')ma++;if(r['l_'+i]==='P')lp++;else if(r['l_'+i]==='A')la++;});const mt=mp+ma,lt=lp+la,mpct=mt?Math.round(100*mp/mt):null,lpct=lt?Math.round(100*lp/lt):null,pc=p=>p===null?'':p>=75?'g':p>=50?'w':'r';html+=`<tr><td>${i+1}</td><td><strong>${s}</strong></td><td>${mp}/${mt||0}</td><td>${lp}/${lt||0}</td><td>${dates.length}</td><td class="pct ${pc(mpct)}">${mpct!==null?mpct+'%':'—'}</td><td class="pct ${pc(lpct)}">${lpct!==null?lpct+'%':'—'}</td></tr>`;});
+  html+=`</tbody></table><p style="margin-top:10px;font-size:11px;color:var(--text3)">Based on ${dates.length} day(s)</p>`;
   body.innerHTML=html;
 }
 
 // ── SETTINGS ──
-function saveCreds(){
-  const u=document.getElementById('new-u').value.trim(),p=document.getElementById('new-pw').value,c=document.getElementById('conf-pw').value;
-  if(!u||!p){toast('Fill in all fields');return;}if(p!==c){toast('Passwords do not match');return;}if(p.length<6){toast('Password must be 6+ characters');return;}
-  localStorage.setItem(CR,JSON.stringify({username:u,password:p}));
-  ['new-u','new-pw','conf-pw'].forEach(id=>document.getElementById(id).value='');
-  toast('✔ Credentials updated!');
-}
-function clearRecs(){
-  if(!confirm('Delete ALL attendance records?\n\nStudent names and details are kept.'))return;
-  if(!confirm('Last check — are you sure?'))return;
-  db.records={};saveDB();toast('Records cleared');
-}
-function doLogout(){if(!confirm('Log out?'))return;sessionStorage.removeItem('vs_auth');window.location.href='login.html';}
+function saveCreds(){const u=document.getElementById('new-u').value.trim(),p=document.getElementById('new-pw').value,c=document.getElementById('conf-pw').value;if(!u||!p){toast('सभी फ़ील्ड भरें');return;}if(p!==c){toast('पासवर्ड मेल नहीं खाते');return;}if(p.length<6){toast('6+ अक्षर चाहिए');return;}localStorage.setItem(CR,JSON.stringify({username:u,password:p}));['new-u','new-pw','conf-pw'].forEach(id=>document.getElementById(id).value='');toast('✔ क्रेडेंशियल अपडेट हुए!');}
+function clearRecs(){if(!confirm('सभी उपस्थिति रिकॉर्ड हटाएं?'))return;if(!confirm('क्या आप सुनिश्चित हैं?'))return;db.records={};saveDB();toast('रिकॉर्ड हटाए गए');}
+function doLogout(){if(!confirm('लॉग आउट करें?'))return;sessionStorage.removeItem('vs_auth');window.location.href='login.html';}
 
 // ── TOAST ──
 function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2400);}
