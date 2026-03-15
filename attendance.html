@@ -610,6 +610,7 @@ function switchClass(id){
   document.getElementById('clear-lbl').textContent=cl;
   renderAttendance();renderStudents();renderProfiles();renderReport();
   if(document.getElementById('panel-dashboard').classList.contains('active'))renderDashboard();
+  DB.updatePollTarget(id,curDate);
 }
 
 // ── TABS ──────────────────────────────────────────────────
@@ -729,9 +730,9 @@ function renderSess(s){
 }
 function mark(s,i,v){DB.setMark(curClass,curDate,s,i,v);renderSess(s);}
 function markAll(s,v){DB.markAllAtt(curClass,curDate,s,v,DB.getStudents(curClass).length);renderSess(s);toast(v==='P'?'All marked Present':'All marked Absent');}
-function chDate(d){const dt=new Date(curDate+'T00:00:00');dt.setDate(dt.getDate()+d);curDate=dt.toISOString().slice(0,10);renderAttendance();}
-function goToday(){curDate=todayStr();renderAttendance();}
-function onPick(){const v=document.getElementById('dpick').value;if(v){curDate=v;renderAttendance();}}
+function chDate(d){const dt=new Date(curDate+'T00:00:00');dt.setDate(dt.getDate()+d);curDate=dt.toISOString().slice(0,10);renderAttendance();DB.updatePollTarget(curClass,curDate);}
+function goToday(){curDate=todayStr();renderAttendance();DB.updatePollTarget(curClass,curDate);}
+function onPick(){const v=document.getElementById('dpick').value;if(v){curDate=v;renderAttendance();DB.updatePollTarget(curClass,curDate);}}
 
 // ── STUDENTS ──────────────────────────────────────────────
 async function addStudent(){
@@ -930,6 +931,23 @@ function toggleTheme(){applyTheme(root.getAttribute('data-theme')==='dark'?'ligh
 
 // ── INIT ──────────────────────────────────────────────────
 buildClassBar();switchClass(curClass);renderAttendance();
+
+// Full sync from Firebase on load
+DB.fullSync().then(()=>{
+  buildClassBar();switchClass(curClass);renderAttendance();
+  if(document.getElementById('panel-dashboard').classList.contains('active'))renderDashboard();
+});
+
+// Real-time polling every 3 seconds — Firebase is source of truth
+DB.startPolling(curClass, curDate, function(data){
+  if(data.classId===curClass && data.date===curDate){
+    renderSess('morning');
+    renderSess('lunch');
+  }
+  if(document.getElementById('panel-dashboard').classList.contains('active')){
+    renderDashboard();
+  }
+});
 </script>
 </body>
 </html>
