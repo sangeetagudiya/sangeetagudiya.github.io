@@ -298,6 +298,23 @@ input[type="date"]:focus{border-color:var(--text2);}
 .empty svg{width:32px;height:32px;stroke:var(--text3);fill:none;stroke-width:1.5;margin-bottom:10px;opacity:.5;}
 .empty p{font-size:13px;line-height:1.6;}
 
+
+/* HOLIDAY PANEL */
+@keyframes holGlow{0%,100%{opacity:.4}50%{opacity:1}}
+@keyframes holDotPulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.8);opacity:.4}}
+@keyframes holTextPulse{0%,100%{opacity:1}50%{opacity:.7}}
+@keyframes holCountPop{from{transform:scale(1)}to{transform:scale(1.2)}}
+.hol-row{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:9px;border:1px solid var(--border);background:var(--card);transition:all .2s;}
+.hol-row:hover{border-color:var(--border2);transform:translateX(2px);}
+.hol-row.past{opacity:.4;}
+.hol-badge{min-width:56px;text-align:center;padding:3px 8px;border-radius:6px;font-size:10px;font-weight:700;flex-shrink:0;}
+.hol-badge.school{background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-bd);}
+.hol-badge.holiday{background:var(--green-bg);color:var(--green);border:1px solid var(--green-bd);}
+.hol-badge.special{background:var(--blue-bg);color:var(--blue);border:1px solid var(--blue-bd);}
+.hol-d{font-size:11px;color:var(--text3);min-width:86px;flex-shrink:0;}
+.hol-n{font-size:13px;font-weight:600;color:var(--text);flex:1;}
+.hol-cd{font-size:11px;color:var(--text3);flex-shrink:0;text-align:right;min-width:70px;}
+
 /* RIPPLE */
 .ripple{position:fixed;border-radius:50%;pointer-events:none;transform:scale(0);animation:rippleA .5s ease-out forwards;z-index:9998;}
 [data-theme="light"] .ripple{background:rgba(0,0,0,0.06);}
@@ -367,6 +384,7 @@ input[type="date"]:focus{border-color:var(--text2);}
     <button class="tab" onclick="showTab('calendar',this)">Calendar</button>
     <button class="tab" onclick="showTab('report',this)">Report</button>
     <button class="tab" onclick="showTab('settings',this)">Settings</button>
+    <button class="tab" onclick="showTab('holidays',this)">Holidays</button>
   </div>
 </nav>
 
@@ -474,6 +492,42 @@ input[type="date"]:focus{border-color:var(--text2);}
       <div class="card-title"><svg viewBox="0 0 24 24"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>Detailed Report — <span id="report-lbl" style="color:var(--text2);margin-left:4px;font-weight:500;"></span></div>
       <div id="report-body" class="rwrap"></div>
     </div>
+  </div>
+
+  <!-- HOLIDAYS -->
+  <div class="panel" id="panel-holidays">
+    <div class="card" id="hol-alert-card" style="border-width:1.5px;position:relative;overflow:hidden;">
+      <div id="hol-alert-glow" style="position:absolute;inset:0;pointer-events:none;animation:holGlow 2.5s ease-in-out infinite;"></div>
+      <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:6px;display:flex;align-items:center;gap:6px;" id="hol-alert-label">
+        <span id="hol-alert-dot" style="width:8px;height:8px;border-radius:50%;display:inline-block;animation:holDotPulse 1.2s ease-in-out infinite;flex-shrink:0;"></span>
+        Upcoming Holiday
+      </div>
+      <div id="hol-alert-name" style="font-size:22px;font-weight:700;color:var(--text);letter-spacing:-0.5px;margin-bottom:4px;animation:holTextPulse 3s ease-in-out infinite;"></div>
+      <div id="hol-alert-date" style="font-size:13px;color:var(--text2);margin-bottom:12px;"></div>
+      <div id="hol-alert-countdown" style="display:inline-flex;align-items:center;gap:8px;padding:6px 16px;border-radius:8px;font-size:13px;font-weight:600;">
+        <span>In</span>
+        <span id="hol-alert-days" style="font-size:22px;font-weight:800;animation:holCountPop 1s ease-in-out infinite alternate;"></span>
+        <span id="hol-alert-days-lbl"></span>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:12px;">
+      <div style="display:flex;gap:14px;flex-wrap:wrap;">
+        <div style="display:flex;align-items:center;gap:7px;font-size:12px;color:var(--text2);">
+          <span style="width:12px;height:12px;border-radius:3px;background:var(--amber);display:inline-block;flex-shrink:0;"></span>School / Working day
+        </div>
+        <div style="display:flex;align-items:center;gap:7px;font-size:12px;color:var(--text2);">
+          <span style="width:12px;height:12px;border-radius:3px;background:var(--green);display:inline-block;flex-shrink:0;"></span>Holiday
+        </div>
+        <div style="display:flex;align-items:center;gap:7px;font-size:12px;color:var(--text2);">
+          <span style="width:12px;height:12px;border-radius:3px;background:var(--blue);display:inline-block;flex-shrink:0;"></span>Special / National holiday
+        </div>
+      </div>
+    </div>
+
+    <div style="font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--text3);margin-bottom:10px;">All Holidays — 2025 to 2026</div>
+    <div id="hol-list" style="display:flex;flex-direction:column;gap:6px;"></div>
+    <button class="btn btn-ghost btn-md" id="hol-toggle-btn" onclick="togglePastHols()" style="width:100%;margin-top:10px;justify-content:center;">Show past holidays ↓</button>
   </div>
 
   <!-- SETTINGS -->
@@ -625,6 +679,7 @@ function showTab(name,btn){
   if(name==='profiles')renderProfiles();
   if(name==='calendar')renderCalendar();
   if(name==='report')renderReport();
+  if(name==='holidays')renderHolidays();
 }
 
 // ── DASHBOARD ─────────────────────────────────────────────
@@ -914,6 +969,121 @@ function clearRecs(){
   renderReport();renderDashboard();toast(`Records cleared for ${cl}`);
 }
 function doLogout(){if(!confirm('Sign out of Sangeetam Portal?'))return;DB.logout();window.location.href='login.html';}
+
+
+// ── HOLIDAYS ──────────────────────────────────────────────
+const HOLIDAYS=[
+  {date:'2025-01-06',name:'Guru Gobind Singh Jayanti',type:'holiday'},
+  {date:'2025-01-14',name:'Makar Sankranti',type:'holiday'},
+  {date:'2025-01-23',name:'Subhash Chandra Bose Jayanti',type:'holiday'},
+  {date:'2025-01-26',name:'Republic Day',type:'special'},
+  {date:'2025-01-29',name:'Mauni Amavasya',type:'holiday'},
+  {date:'2025-02-14',name:'Basant Panchami',type:'holiday'},
+  {date:'2025-03-08',name:'Maha Shivratri',type:'holiday'},
+  {date:'2025-03-14',name:'Holika Dahan',type:'holiday'},
+  {date:'2025-03-15',name:'Holi',type:'special'},
+  {date:'2025-03-28',name:'Good Friday',type:'special'},
+  {date:'2025-04-10',name:'Eid-ul-Fitr',type:'special'},
+  {date:'2025-04-14',name:'Ambedkar Jayanti',type:'special'},
+  {date:'2025-04-17',name:'Ram Navami',type:'holiday'},
+  {date:'2025-05-01',name:'Labour Day / May Day',type:'holiday'},
+  {date:'2025-05-13',name:'Buddha Purnima',type:'holiday'},
+  {date:'2025-06-06',name:'Eid-ul-Adha (Bakrid)',type:'special'},
+  {date:'2025-07-06',name:'Muharram',type:'holiday'},
+  {date:'2025-07-23',name:'Haryali Teej',type:'school'},
+  {date:'2025-08-12',name:'Raksha Bandhan',type:'holiday'},
+  {date:'2025-08-15',name:'Independence Day',type:'special'},
+  {date:'2025-08-18',name:'Janmashtami',type:'holiday'},
+  {date:'2025-09-05',name:"Teachers' Day",type:'school'},
+  {date:'2025-10-02',name:'Gandhi Jayanti',type:'special'},
+  {date:'2025-10-02',name:'Dussehra',type:'special'},
+  {date:'2025-10-20',name:'Diwali',type:'special'},
+  {date:'2025-10-21',name:'Diwali (2nd day)',type:'holiday'},
+  {date:'2025-10-22',name:'Govardhan Puja',type:'holiday'},
+  {date:'2025-10-23',name:'Bhai Dooj',type:'holiday'},
+  {date:'2025-11-05',name:'Guru Nanak Jayanti',type:'special'},
+  {date:'2025-11-14',name:"Children's Day",type:'school'},
+  {date:'2025-12-25',name:'Christmas Day',type:'special'},
+  {date:'2026-01-06',name:'Guru Gobind Singh Jayanti',type:'holiday'},
+  {date:'2026-01-14',name:'Makar Sankranti',type:'holiday'},
+  {date:'2026-01-23',name:'Subhash Chandra Bose Jayanti',type:'holiday'},
+  {date:'2026-01-26',name:'Republic Day',type:'special'},
+  {date:'2026-02-02',name:'Basant Panchami',type:'holiday'},
+  {date:'2026-02-26',name:'Maha Shivratri',type:'holiday'},
+  {date:'2026-03-03',name:'Holi',type:'special'},
+  {date:'2026-03-20',name:'Eid-ul-Fitr',type:'special'},
+  {date:'2026-04-02',name:'Ram Navami',type:'holiday'},
+  {date:'2026-04-03',name:'Good Friday',type:'special'},
+  {date:'2026-04-14',name:'Ambedkar Jayanti',type:'special'},
+  {date:'2026-05-01',name:'Labour Day',type:'holiday'},
+  {date:'2026-05-31',name:'Buddha Purnima',type:'holiday'},
+];
+const HOL_MONTHS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const HOL_DAYS=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+let showPastHols=false;
+
+function holParseDate(s){const[y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d);}
+function holFmtDate(s){const d=holParseDate(s);return HOL_DAYS[d.getDay()]+', '+d.getDate()+' '+HOL_MONTHS[d.getMonth()]+' '+d.getFullYear();}
+function holDiff(a,b){return Math.round((b-a)/(1000*60*60*24));}
+
+function renderHolidays(){
+  const now=new Date();now.setHours(0,0,0,0);
+  const sorted=HOLIDAYS.map(h=>({...h,d:holParseDate(h.date)})).sort((a,b)=>a.d-b.d);
+
+  // Alert box — next upcoming
+  const next=sorted.filter(h=>h.d>=now)[0];
+  if(next){
+    const days=holDiff(now,next.d);
+    const isSpec=next.type==='special',isHol=next.type==='holiday';
+    const alertCard=document.getElementById('hol-alert-card');
+    const alertLabel=document.getElementById('hol-alert-label');
+    const alertDot=document.getElementById('hol-alert-dot');
+    const alertCountdown=document.getElementById('hol-alert-countdown');
+    const alertGlow=document.getElementById('hol-alert-glow');
+    if(isSpec){
+      alertCard.style.borderColor='var(--blue)';
+      alertDot.style.background='var(--blue)';
+      alertLabel.style.color='var(--blue)';
+      alertCountdown.style.background='var(--blue-bg)';
+      alertCountdown.style.border='1px solid var(--blue-bd)';
+      alertCountdown.style.color='var(--blue)';
+      alertGlow.style.background='radial-gradient(ellipse at 50% 0%,rgba(37,99,235,0.08) 0%,transparent 70%)';
+    } else {
+      alertCard.style.borderColor='var(--green)';
+      alertDot.style.background='var(--green)';
+      alertLabel.style.color='var(--green)';
+      alertCountdown.style.background='var(--green-bg)';
+      alertCountdown.style.border='1px solid var(--green-bd)';
+      alertCountdown.style.color='var(--green)';
+      alertGlow.style.background='radial-gradient(ellipse at 50% 0%,rgba(22,163,74,0.08) 0%,transparent 70%)';
+    }
+    document.getElementById('hol-alert-name').textContent=next.name;
+    document.getElementById('hol-alert-date').textContent=holFmtDate(next.date);
+    document.getElementById('hol-alert-days').textContent=days===0?'Today':days;
+    document.getElementById('hol-alert-days-lbl').textContent=days===0?'':days===1?'day':'days';
+  }
+
+  // List
+  const list=document.getElementById('hol-list');
+  list.innerHTML='';
+  const toShow=showPastHols?sorted:sorted.filter(h=>h.d>=now);
+  toShow.forEach(h=>{
+    const past=h.d<now;
+    const days=holDiff(now,h.d);
+    const row=document.createElement('div');
+    row.className='hol-row'+(past?' past':'');
+    const bc=h.type==='special'?'special':h.type==='holiday'?'holiday':'school';
+    const bl=h.type==='special'?'Special':h.type==='holiday'?'Holiday':'School';
+    let cd='';
+    if(!past) cd=days===0?'Today':days===1?'Tomorrow':'In '+days+' days';
+    else cd=Math.abs(days)+' days ago';
+    row.innerHTML=`<div class="hol-badge ${bc}">${bl}</div><div class="hol-d">${HOL_DAYS[h.d.getDay()].slice(0,3)}, ${h.d.getDate()} ${HOL_MONTHS[h.d.getMonth()]} ${h.d.getFullYear()}</div><div class="hol-n">${h.name}</div><div class="hol-cd">${cd}</div>`;
+    list.appendChild(row);
+  });
+  document.getElementById('hol-toggle-btn').textContent=showPastHols?'Hide past holidays ↑':'Show past holidays ↓';
+}
+
+function togglePastHols(){showPastHols=!showPastHols;renderHolidays();}
 
 // ── TOAST ─────────────────────────────────────────────────
 function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
