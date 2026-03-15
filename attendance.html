@@ -1,1 +1,514 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Attendance — Vidya Setu</title>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root { --tr: background .3s, color .3s, border-color .3s; }
+[data-theme="light"] {
+  --bg:#f2ede4; --bg2:#ede7db; --bg3:#e6dfd3;
+  --text:#1a1712; --text2:#5c5649; --text3:#9a9080;
+  --warm:#7a5c38; --accent:#c96b3a;
+  --border:rgba(0,0,0,0.09); --border2:rgba(0,0,0,0.15);
+  --card:#fff8f0; --card2:#f5ede0; --input-bg:#ede7db;
+  --nav-bg:rgba(242,237,228,0.93);
+  --btn-bg:#1a1712; --btn-text:#f2ede4;
+  --green:#166534; --green-bg:#dcfce7; --green-bd:#86efac;
+  --red:#b91c1c; --red-bg:#fee2e2; --red-bd:#fca5a5;
+  --amber:#92400e; --amber-bg:#fef3c7;
+  --toggle-bg:#d4c9b5;
+  --shadow:0 2px 16px rgba(0,0,0,0.07);
+}
+[data-theme="dark"] {
+  --bg:#0f0f0e; --bg2:#1a1915; --bg3:#252420;
+  --text:#f0ebe0; --text2:#9a9488; --text3:#6b665e;
+  --warm:#c4a882; --accent:#d4784a;
+  --border:rgba(255,255,255,0.07); --border2:rgba(255,255,255,0.14);
+  --card:#1e1c18; --card2:#252420; --input-bg:#252420;
+  --nav-bg:rgba(15,15,14,0.92);
+  --btn-bg:#f0ebe0; --btn-text:#0f0f0e;
+  --green:#4ade80; --green-bg:rgba(74,222,128,0.1); --green-bd:rgba(74,222,128,0.25);
+  --red:#f87171; --red-bg:rgba(248,113,113,0.1); --red-bd:rgba(248,113,113,0.25);
+  --amber:#fbbf24; --amber-bg:rgba(251,191,36,0.1);
+  --toggle-bg:#3a3830;
+  --shadow:0 2px 16px rgba(0,0,0,0.3);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;transition:var(--tr);}
 
+/* NAV */
+nav{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:13px 28px;background:var(--nav-bg);backdrop-filter:blur(18px);border-bottom:1px solid var(--border);transition:var(--tr);gap:10px;flex-wrap:wrap;}
+.nav-logo{display:flex;align-items:center;gap:8px;text-decoration:none;}
+.nav-mark{width:30px;height:30px;background:var(--text);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:15px;transition:background .3s;}
+.nav-title{font-family:'Lora',serif;font-size:16px;color:var(--text);transition:color .3s;}
+.nav-title span{font-family:'Inter',sans-serif;font-size:12px;color:var(--text3);font-style:normal;display:block;margin-top:1px;}
+.nav-r{display:flex;align-items:center;gap:8px;}
+.theme-toggle{width:32px;height:32px;background:var(--toggle-bg);border:1px solid var(--border2);border-radius:7px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;transition:background .3s;}
+.logout-btn{font-size:13px;font-weight:500;color:var(--text2);background:none;border:1px solid var(--border2);border-radius:7px;padding:6px 12px;cursor:pointer;font-family:inherit;transition:color .2s,border-color .2s;}
+.logout-btn:hover{color:var(--text);}
+
+/* TABS */
+.tabs{display:flex;border-bottom:1px solid var(--border);padding:0 20px;background:var(--bg2);overflow-x:auto;transition:var(--tr);}
+.tab{font-family:'Inter',sans-serif;font-size:13px;font-weight:500;padding:12px 16px;border:none;background:none;cursor:pointer;color:var(--text2);border-bottom:2px solid transparent;white-space:nowrap;transition:color .15s,border-color .15s;}
+.tab.active{color:var(--warm);border-bottom-color:var(--warm);}
+.tab:hover:not(.active){color:var(--text);}
+
+/* MAIN */
+.main{max-width:880px;margin:0 auto;padding:24px 16px;}
+.panel{display:none;}.panel.active{display:block;}
+
+/* CARD */
+.card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:16px;box-shadow:var(--shadow);transition:var(--tr);}
+.card-title{font-family:'Lora',serif;font-size:16px;font-weight:400;color:var(--text);margin-bottom:16px;display:flex;align-items:center;gap:8px;transition:color .3s;}
+
+/* DATE NAV */
+.date-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:20px;}
+.arrow-btn{background:var(--card);border:1px solid var(--border2);border-radius:8px;padding:8px 14px;cursor:pointer;font-size:15px;color:var(--warm);font-weight:600;transition:background .15s,var(--tr);}
+.arrow-btn:hover{background:var(--bg2);}
+.date-label{font-family:'Lora',serif;font-size:16px;color:var(--text);flex:1;min-width:150px;transition:color .3s;}
+input[type="date"]{background:var(--card);border:1px solid var(--border2);border-radius:8px;padding:8px 12px;font-family:'Inter',sans-serif;font-size:13px;color:var(--text);transition:var(--tr);}
+.today-btn{font-size:12px;font-weight:600;color:var(--warm);background:var(--bg2);border:1px solid var(--border2);border-radius:7px;padding:7px 12px;cursor:pointer;font-family:inherit;}
+
+/* SESSION */
+.sess-head{display:grid;grid-template-columns:1fr 80px 80px;gap:8px;padding:0 6px 8px;border-bottom:1px solid var(--border);}
+.sess-head span{font-size:11px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:var(--text3);}
+.sess-head span:nth-child(2),.sess-head span:nth-child(3){text-align:center;}
+.stu-row{display:grid;grid-template-columns:1fr 80px 80px;gap:8px;align-items:center;padding:9px 6px;border-bottom:1px solid var(--bg2);transition:background .1s;}
+.stu-row:hover{background:var(--bg2);border-radius:8px;}
+.stu-row:last-child{border-bottom:none;}
+.sname{font-size:14px;font-weight:500;color:var(--text);transition:color .3s;}
+.sroll{font-size:11px;color:var(--text3);}
+.att-cell{display:flex;justify-content:center;}
+.att-btn{border:1.5px solid;border-radius:7px;padding:5px 0;width:64px;font-size:12px;font-weight:600;cursor:pointer;background:transparent;font-family:'Inter',sans-serif;letter-spacing:.2px;transition:all .15s;}
+.att-btn.P{border-color:var(--green-bd);color:var(--green);}
+.att-btn.P.on{background:var(--green);color:#fff;border-color:var(--green);}
+.att-btn.A{border-color:var(--red-bd);color:var(--red);}
+.att-btn.A.on{background:var(--red);color:#fff;border-color:var(--red);}
+.att-btn:hover{opacity:.75;transform:scale(1.04);}
+
+/* MARK ALL */
+.mall-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:14px;}
+.mall-row label{font-size:12px;font-weight:600;color:var(--text3);}
+.mall-p{background:var(--green-bg);border:1px solid var(--green-bd);color:var(--green);border-radius:7px;padding:6px 13px;cursor:pointer;font-size:12px;font-weight:600;font-family:inherit;transition:all .15s;}
+.mall-p:hover{background:var(--green);color:#fff;}
+.mall-a{background:var(--red-bg);border:1px solid var(--red-bd);color:var(--red);border-radius:7px;padding:6px 13px;cursor:pointer;font-size:12px;font-weight:600;font-family:inherit;}
+.mall-a:hover{background:var(--red);color:#fff;}
+
+/* BADGES */
+.badges{display:flex;gap:7px;flex-wrap:wrap;margin-top:14px;}
+.badge{padding:4px 13px;border-radius:20px;font-size:12px;font-weight:600;}
+.bg-g{background:var(--green-bg);color:var(--green);border:1px solid var(--green-bd);}
+.bg-r{background:var(--red-bg);color:var(--red);border:1px solid var(--red-bd);}
+.bg-n{background:var(--bg2);color:var(--text3);border:1px solid var(--border2);}
+
+/* STUDENTS */
+.add-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;}
+.add-row input{flex:1;min-width:160px;background:var(--input-bg);border:1px solid var(--border2);border-radius:8px;padding:10px 14px;font-family:'Inter',sans-serif;font-size:14px;color:var(--text);outline:none;transition:var(--tr);}
+.add-row input:focus{border-color:var(--warm);}
+.btn-add{background:var(--btn-bg);color:var(--btn-text);border:none;border-radius:8px;padding:10px 20px;cursor:pointer;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;transition:opacity .2s,background .3s,color .3s;}
+.btn-add:hover{opacity:.82;}
+.stu-item{display:flex;align-items:center;justify-content:space-between;padding:11px 14px;background:var(--bg2);border-radius:10px;border:1px solid var(--border);margin-bottom:8px;transition:var(--tr);}
+.stu-num{width:26px;height:26px;border-radius:7px;background:var(--card);border:1px solid var(--border2);font-size:12px;font-weight:600;color:var(--warm);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.stu-item-l{display:flex;align-items:center;gap:10px;}
+.stu-item-name{font-weight:500;font-size:14px;}
+.btn-rm{background:var(--red-bg);border:1px solid var(--red-bd);color:var(--red);border-radius:7px;padding:5px 12px;cursor:pointer;font-size:12px;font-weight:600;font-family:inherit;}
+.btn-rm:hover{background:var(--red);color:#fff;border-color:var(--red);}
+
+/* CALENDAR */
+.cal-nav{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.cal-nav button{background:none;border:1px solid var(--border2);border-radius:7px;padding:6px 12px;cursor:pointer;font-weight:700;font-size:14px;color:var(--warm);transition:background .15s;}
+.cal-nav button:hover{background:var(--bg2);}
+.cal-month{flex:1;font-family:'Lora',serif;font-size:17px;color:var(--text);}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;}
+.cal-dn{text-align:center;font-size:10px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:var(--text3);padding:4px 0;}
+.cal-d{text-align:center;border-radius:8px;padding:7px 2px;font-size:13px;cursor:pointer;font-weight:500;color:var(--text2);transition:background .15s;}
+.cal-d.empty{visibility:hidden;}
+.cal-d.today{background:var(--text);color:var(--bg);}
+.cal-d.has{background:var(--green-bg);color:var(--green);border:1px solid var(--green-bd);}
+.cal-d.sel:not(.today){outline:2px solid var(--warm);outline-offset:1px;}
+.cal-d:not(.today):not(.has):hover{background:var(--bg2);}
+.cal-legend{display:flex;gap:14px;margin-top:12px;flex-wrap:wrap;}
+.cal-legend span{font-size:12px;color:var(--text2);display:flex;align-items:center;gap:5px;}
+.leg{width:11px;height:11px;border-radius:3px;display:inline-block;}
+
+/* REPORT */
+.report-wrap{overflow-x:auto;}
+.rtable{width:100%;border-collapse:collapse;font-size:13px;min-width:520px;}
+.rtable th{background:var(--bg2);color:var(--text2);font-family:'Inter',sans-serif;font-weight:600;font-size:11px;letter-spacing:.5px;text-transform:uppercase;padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);}
+.rtable td{padding:10px 12px;border-bottom:1px solid var(--bg2);color:var(--text);font-size:13px;}
+.rtable tr:last-child td{border-bottom:none;}
+.rtable tr:hover td{background:var(--bg2);}
+.pct{font-weight:600;}
+.pct.g{color:var(--green);}
+.pct.w{color:var(--amber);}
+.pct.r{color:var(--red);}
+
+/* SETTINGS */
+.set-sec{margin-bottom:28px;}
+.set-sec h3{font-family:'Lora',serif;font-size:14px;font-weight:400;color:var(--text3);letter-spacing:.5px;text-transform:uppercase;margin-bottom:14px;}
+.btn-save{background:var(--btn-bg);color:var(--btn-text);border:none;border-radius:8px;padding:11px 22px;cursor:pointer;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;transition:opacity .2s,background .3s,color .3s;margin-top:6px;}
+.btn-save:hover{opacity:.82;}
+.btn-danger{background:var(--red-bg);border:1px solid var(--red-bd);color:var(--red);border-radius:8px;padding:10px 18px;cursor:pointer;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;margin-top:4px;}
+.btn-danger:hover{background:var(--red);color:#fff;}
+.divider{border:none;border-top:1px solid var(--border);margin:24px 0;}
+
+/* EMPTY */
+.empty{text-align:center;padding:36px 16px;color:var(--text3);}
+.empty-icon{font-size:36px;margin-bottom:10px;}
+.empty p{font-size:14px;line-height:1.6;}
+
+/* TOAST */
+#toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:var(--text);color:var(--bg);padding:11px 22px;border-radius:10px;font-size:13px;font-weight:600;opacity:0;transition:opacity .3s;pointer-events:none;z-index:999;white-space:nowrap;}
+#toast.show{opacity:1;}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a class="nav-logo" href="index.html">
+    <div class="nav-mark">🏫</div>
+    <div class="nav-title">Vidya Setu <span id="nav-date"></span></div>
+  </a>
+  <div class="nav-r">
+    <button class="theme-toggle" id="themeBtn" onclick="toggleTheme()">🌙</button>
+    <button class="logout-btn" onclick="doLogout()">🔒 Logout</button>
+  </div>
+</nav>
+
+<!-- TABS -->
+<div class="tabs">
+  <button class="tab active" onclick="showTab('attendance',this)">📋 Attendance</button>
+  <button class="tab" onclick="showTab('students',this)">👩‍🎓 Students</button>
+  <button class="tab" onclick="showTab('calendar',this)">📅 Calendar</button>
+  <button class="tab" onclick="showTab('report',this)">📊 Report</button>
+  <button class="tab" onclick="showTab('settings',this)">⚙️ Settings</button>
+</div>
+
+<div class="main">
+
+  <!-- ATTENDANCE -->
+  <div class="panel active" id="panel-attendance">
+    <div class="card">
+      <div class="date-row">
+        <button class="arrow-btn" onclick="chDate(-1)">←</button>
+        <div class="date-label" id="date-label"></div>
+        <input type="date" id="date-picker" onchange="onPick()">
+        <button class="today-btn" onclick="goToday()">Today</button>
+        <button class="arrow-btn" onclick="chDate(1)">→</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">☀️ Morning Attendance</div>
+      <div class="mall-row">
+        <label>Mark all:</label>
+        <button class="mall-p" onclick="markAll('m','P')">✔ All Present</button>
+        <button class="mall-a" onclick="markAll('m','A')">✘ All Absent</button>
+      </div>
+      <div class="sess-head"><span>Student</span><span>Present</span><span>Absent</span></div>
+      <div id="m-list"></div>
+      <div class="badges" id="m-badges"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">🌤️ Lunch Attendance</div>
+      <div class="mall-row">
+        <label>Mark all:</label>
+        <button class="mall-p" onclick="markAll('l','P')">✔ All Present</button>
+        <button class="mall-a" onclick="markAll('l','A')">✘ All Absent</button>
+      </div>
+      <div class="sess-head"><span>Student</span><span>Present</span><span>Absent</span></div>
+      <div id="l-list"></div>
+      <div class="badges" id="l-badges"></div>
+    </div>
+  </div>
+
+  <!-- STUDENTS -->
+  <div class="panel" id="panel-students">
+    <div class="card">
+      <div class="card-title">➕ Add Student</div>
+      <div class="add-row">
+        <input type="text" id="new-stu" placeholder="Enter student's full name…" onkeydown="if(event.key==='Enter')addStu()">
+        <button class="btn-add" onclick="addStu()">Add</button>
+      </div>
+      <div class="card-title" style="margin-top:4px;">
+        Class List &nbsp;<span id="stu-count" style="font-size:13px;color:var(--text3);font-family:'Inter',sans-serif;"></span>
+      </div>
+      <div id="stu-list"></div>
+    </div>
+  </div>
+
+  <!-- CALENDAR -->
+  <div class="panel" id="panel-calendar">
+    <div class="card">
+      <div class="card-title">📅 Attendance Calendar</div>
+      <div class="cal-nav">
+        <button onclick="calPrev()">←</button>
+        <div class="cal-month" id="cal-month"></div>
+        <button onclick="calNext()">→</button>
+      </div>
+      <div class="cal-grid" id="cal-grid"></div>
+      <div class="cal-legend">
+        <span><span class="leg" style="background:var(--text)"></span> Today</span>
+        <span><span class="leg" style="background:var(--green-bg);border:1px solid var(--green-bd)"></span> Recorded</span>
+        <span><span class="leg" style="outline:2px solid var(--warm);border-radius:3px"></span> Selected</span>
+      </div>
+    </div>
+    <div class="card" id="cal-detail" style="display:none">
+      <div class="card-title" id="cal-detail-title"></div>
+      <div id="cal-detail-body"></div>
+    </div>
+  </div>
+
+  <!-- REPORT -->
+  <div class="panel" id="panel-report">
+    <div class="card">
+      <div class="card-title">📊 Attendance Summary</div>
+      <div id="report-body" class="report-wrap"></div>
+    </div>
+  </div>
+
+  <!-- SETTINGS -->
+  <div class="panel" id="panel-settings">
+    <div class="card">
+      <div class="set-sec">
+        <h3>🔑 Change Credentials</h3>
+        <div style="display:flex;flex-direction:column;gap:14px;max-width:380px;">
+          <div>
+            <label style="font-size:11px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:var(--text3);display:block;margin-bottom:6px;">New Username</label>
+            <input type="text" id="new-u" placeholder="New username" style="width:100%;background:var(--input-bg);border:1px solid var(--border2);border-radius:8px;padding:10px 14px;font-family:'Inter',sans-serif;font-size:14px;color:var(--text);outline:none;">
+          </div>
+          <div>
+            <label style="font-size:11px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:var(--text3);display:block;margin-bottom:6px;">New Password</label>
+            <input type="password" id="new-pw" placeholder="New password" style="width:100%;background:var(--input-bg);border:1px solid var(--border2);border-radius:8px;padding:10px 14px;font-family:'Inter',sans-serif;font-size:14px;color:var(--text);outline:none;">
+          </div>
+          <div>
+            <label style="font-size:11px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:var(--text3);display:block;margin-bottom:6px;">Confirm Password</label>
+            <input type="password" id="conf-pw" placeholder="Confirm password" style="width:100%;background:var(--input-bg);border:1px solid var(--border2);border-radius:8px;padding:10px 14px;font-family:'Inter',sans-serif;font-size:14px;color:var(--text);outline:none;">
+          </div>
+        </div>
+        <button class="btn-save" onclick="saveCreds()">Save Credentials</button>
+      </div>
+      <hr class="divider">
+      <div class="set-sec">
+        <h3>⚠️ Danger Zone</h3>
+        <p style="font-size:13px;color:var(--text3);margin-bottom:12px;">Permanently deletes all attendance records. Student list is kept.</p>
+        <button class="btn-danger" onclick="clearRecs()">🗑 Clear All Attendance Records</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ── AUTH CHECK ──
+if (!sessionStorage.getItem('vs_auth')) window.location.href = 'login.html';
+
+// ── DATA ──
+const DB = 'vs_db'; const CR = 'vs_creds';
+const DCREDS = { username: 'Devasangeeta', password: 'sangeeta@99' };
+let db = loadDB();
+let cur = todayStr();
+let calY, calM;
+const now = new Date(); calY = now.getFullYear(); calM = now.getMonth();
+
+function loadDB() { try { return JSON.parse(localStorage.getItem(DB)) || { students:[], records:{} }; } catch(e) { return { students:[], records:{} }; } }
+function saveDB() { localStorage.setItem(DB, JSON.stringify(db)); }
+function getCreds() { try { return JSON.parse(localStorage.getItem(CR)) || DCREDS; } catch(e) { return DCREDS; } }
+
+function todayStr() { return new Date().toISOString().slice(0,10); }
+function fmtDate(s) { return new Date(s+'T00:00:00').toLocaleDateString('en-IN',{weekday:'long',year:'numeric',month:'long',day:'numeric'}); }
+function fmtShort(s) { return new Date(s+'T00:00:00').toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}); }
+
+// ── INIT ──
+document.getElementById('nav-date').textContent = fmtShort(todayStr());
+renderAttendance();
+
+// ── TABS ──
+function showTab(name, btn) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
+  document.getElementById('panel-'+name).classList.add('active');
+  btn.classList.add('active');
+  if(name==='attendance') renderAttendance();
+  if(name==='students') renderStudents();
+  if(name==='calendar') renderCalendar();
+  if(name==='report') renderReport();
+}
+
+// ── ATTENDANCE ──
+function renderAttendance() {
+  document.getElementById('date-label').textContent = fmtDate(cur);
+  document.getElementById('date-picker').value = cur;
+  renderSess('m'); renderSess('l');
+}
+function renderSess(s) {
+  const list = document.getElementById(s+'-list');
+  const badges = document.getElementById(s+'-badges');
+  if (!db.students.length) {
+    list.innerHTML = '<div class="empty"><div class="empty-icon">👩‍🎓</div><p>No students yet — add them in the <strong>Students</strong> tab.</p></div>';
+    badges.innerHTML = ''; return;
+  }
+  const rec = db.records[cur] || {};
+  let html = '', P=0, A=0, U=0;
+  db.students.forEach((st,i) => {
+    const v = rec[s+'_'+i] || '';
+    if(v==='P') P++; else if(v==='A') A++; else U++;
+    html += `<div class="stu-row">
+      <div><div class="sname">${st}</div><div class="sroll">#${i+1}</div></div>
+      <div class="att-cell"><button class="att-btn P ${v==='P'?'on':''}" onclick="mark('${s}',${i},'P')">✔ P</button></div>
+      <div class="att-cell"><button class="att-btn A ${v==='A'?'on':''}" onclick="mark('${s}',${i},'A')">✘ A</button></div>
+    </div>`;
+  });
+  list.innerHTML = html;
+  badges.innerHTML = `<span class="badge bg-g">✔ ${P} Present</span><span class="badge bg-r">✘ ${A} Absent</span><span class="badge bg-n">— ${U} Unmarked</span><span class="badge bg-n">Total ${db.students.length}</span>`;
+}
+function mark(s,i,v) {
+  if(!db.records[cur]) db.records[cur]={};
+  const k = s+'_'+i;
+  db.records[cur][k] = db.records[cur][k]===v ? '' : v;
+  saveDB(); renderSess(s);
+}
+function markAll(s,v) {
+  if(!db.records[cur]) db.records[cur]={};
+  db.students.forEach((_,i) => db.records[cur][s+'_'+i]=v);
+  saveDB(); renderSess(s);
+  toast(v==='P' ? '✔ All marked Present' : '✘ All marked Absent');
+}
+function chDate(d) { const dt = new Date(cur+'T00:00:00'); dt.setDate(dt.getDate()+d); cur=dt.toISOString().slice(0,10); renderAttendance(); }
+function goToday() { cur=todayStr(); renderAttendance(); }
+function onPick() { const v=document.getElementById('date-picker').value; if(v){cur=v;renderAttendance();} }
+
+// ── STUDENTS ──
+function addStu() {
+  const inp=document.getElementById('new-stu');
+  const name=inp.value.trim();
+  if(!name){toast('Please enter a name');return;}
+  if(db.students.find(s=>s.toLowerCase()===name.toLowerCase())){toast('Already in list!');return;}
+  db.students.push(name); saveDB(); inp.value=''; renderStudents();
+  toast('✔ '+name+' added');
+}
+function rmStu(i) {
+  if(!confirm('Remove '+db.students[i]+'?\n\nPast attendance records are kept.')) return;
+  const n=db.students[i]; db.students.splice(i,1); saveDB(); renderStudents();
+  toast(n+' removed');
+}
+function renderStudents() {
+  const n=db.students.length;
+  document.getElementById('stu-count').textContent = n?`(${n} student${n>1?'s':''})`:'';
+  const c=document.getElementById('stu-list');
+  if(!n){c.innerHTML='<div class="empty"><div class="empty-icon">✏️</div><p>No students yet. Add the first one above!</p></div>';return;}
+  c.innerHTML=db.students.map((s,i)=>`
+    <div class="stu-item">
+      <div class="stu-item-l"><div class="stu-num">${i+1}</div><div class="stu-item-name">${s}</div></div>
+      <button class="btn-rm" onclick="rmStu(${i})">Remove</button>
+    </div>`).join('');
+}
+
+// ── CALENDAR ──
+function renderCalendar() {
+  const today=todayStr();
+  document.getElementById('cal-month').textContent=new Date(calY,calM,1).toLocaleDateString('en-IN',{month:'long',year:'numeric'});
+  const first=new Date(calY,calM,1).getDay();
+  const days=new Date(calY,calM+1,0).getDate();
+  const pfx=`${calY}-${String(calM+1).padStart(2,'0')}`;
+  const hasDates=Object.keys(db.records).filter(d=>d.startsWith(pfx)&&Object.keys(db.records[d]||{}).length);
+  const dns=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  let html=dns.map(d=>`<div class="cal-dn">${d}</div>`).join('');
+  for(let i=0;i<first;i++) html+=`<div class="cal-d empty">0</div>`;
+  for(let d=1;d<=days;d++){
+    const ds=`${pfx}-${String(d).padStart(2,'0')}`;
+    const cls=[ds===today?'today':'',hasDates.includes(ds)&&ds!==today?'has':'',ds===cur&&ds!==today?'sel':''].filter(Boolean).join(' ');
+    html+=`<div class="cal-d ${cls}" onclick="calClick('${ds}')">${d}</div>`;
+  }
+  document.getElementById('cal-grid').innerHTML=html;
+}
+function calPrev(){calM--;if(calM<0){calM=11;calY--;}renderCalendar();}
+function calNext(){calM++;if(calM>11){calM=0;calY++;}renderCalendar();}
+function calClick(ds) {
+  cur=ds; renderCalendar();
+  const rec=db.records[ds]||{};
+  const det=document.getElementById('cal-detail');
+  document.getElementById('cal-detail-title').textContent='📋 '+fmtDate(ds);
+  if(!db.students.length){document.getElementById('cal-detail-body').innerHTML='<p style="color:var(--text3);font-size:14px">No students registered.</p>';det.style.display='block';return;}
+  if(!Object.keys(rec).length){document.getElementById('cal-detail-body').innerHTML='<p style="color:var(--text3);font-size:14px">No attendance recorded for this day.</p>';det.style.display='block';return;}
+  let html='<div class="report-wrap"><table class="rtable"><thead><tr><th>#</th><th>Student</th><th>Morning</th><th>Lunch</th></tr></thead><tbody>';
+  db.students.forEach((s,i)=>{
+    const m=rec['m_'+i]||'—',l=rec['l_'+i]||'—';
+    const mc=m==='P'?'color:var(--green);font-weight:600':m==='A'?'color:var(--red);font-weight:600':'color:var(--text3)';
+    const lc=l==='P'?'color:var(--green);font-weight:600':l==='A'?'color:var(--red);font-weight:600':'color:var(--text3)';
+    html+=`<tr><td>${i+1}</td><td><strong>${s}</strong></td><td style="${mc}">${m}</td><td style="${lc}">${l}</td></tr>`;
+  });
+  html+='</tbody></table></div>';
+  document.getElementById('cal-detail-body').innerHTML=html;
+  det.style.display='block';
+}
+
+// ── REPORT ──
+function renderReport() {
+  const body=document.getElementById('report-body');
+  if(!db.students.length){body.innerHTML='<div class="empty"><div class="empty-icon">📊</div><p>No students yet.</p></div>';return;}
+  const dates=Object.keys(db.records).sort();
+  if(!dates.length){body.innerHTML='<div class="empty"><div class="empty-icon">📊</div><p>No attendance recorded yet.</p></div>';return;}
+  let html='<table class="rtable"><thead><tr><th>#</th><th>Student</th><th>Mrng P</th><th>Lunch P</th><th>Days</th><th>Mrng %</th><th>Lunch %</th></tr></thead><tbody>';
+  db.students.forEach((s,i)=>{
+    let mp=0,ma=0,lp=0,la=0;
+    dates.forEach(d=>{const r=db.records[d]||{};if(r['m_'+i]==='P')mp++;else if(r['m_'+i]==='A')ma++;if(r['l_'+i]==='P')lp++;else if(r['l_'+i]==='A')la++;});
+    const mt=mp+ma,lt=lp+la;
+    const mpct=mt?Math.round(100*mp/mt):null,lpct=lt?Math.round(100*lp/lt):null;
+    const pc=p=>p===null?'':p>=75?'g':p>=50?'w':'r';
+    html+=`<tr><td>${i+1}</td><td><strong>${s}</strong></td><td>${mp}/${mt||0}</td><td>${lp}/${lt||0}</td><td>${dates.length}</td>
+      <td class="pct ${pc(mpct)}">${mpct!==null?mpct+'%':'—'}</td>
+      <td class="pct ${pc(lpct)}">${lpct!==null?lpct+'%':'—'}</td></tr>`;
+  });
+  html+=`</tbody></table><p style="margin-top:12px;font-size:12px;color:var(--text3)">Based on ${dates.length} day(s) · <span style="color:var(--green);font-weight:600">Green ≥75%</span> · <span style="color:var(--amber);font-weight:600">Amber ≥50%</span> · <span style="color:var(--red);font-weight:600">Red &lt;50%</span></p>`;
+  body.innerHTML=html;
+}
+
+// ── SETTINGS ──
+function saveCreds() {
+  const u=document.getElementById('new-u').value.trim();
+  const p=document.getElementById('new-pw').value;
+  const c=document.getElementById('conf-pw').value;
+  if(!u||!p){toast('Fill in all fields');return;}
+  if(p!==c){toast('Passwords do not match');return;}
+  if(p.length<6){toast('Password must be 6+ characters');return;}
+  localStorage.setItem(CR,JSON.stringify({username:u,password:p}));
+  ['new-u','new-pw','conf-pw'].forEach(id=>document.getElementById(id).value='');
+  toast('✔ Credentials updated!');
+}
+function clearRecs() {
+  if(!confirm('Delete ALL attendance records?\n\nStudent list is kept. This cannot be undone.')) return;
+  if(!confirm('Last check — are you sure?')) return;
+  db.records={}; saveDB(); toast('Records cleared');
+}
+
+// ── LOGOUT ──
+function doLogout() {
+  if(!confirm('Log out?')) return;
+  sessionStorage.removeItem('vs_auth');
+  window.location.href='login.html';
+}
+
+// ── TOAST ──
+function toast(msg) {
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2400);
+}
+
+// ── THEME ──
+const root=document.documentElement;
+const tBtn=document.getElementById('themeBtn');
+const saved=localStorage.getItem('vs_theme')||'light';
+applyTheme(saved);
+function applyTheme(t){root.setAttribute('data-theme',t);tBtn.textContent=t==='dark'?'☀️':'🌙';localStorage.setItem('vs_theme',t);}
+function toggleTheme(){applyTheme(root.getAttribute('data-theme')==='dark'?'light':'dark');}
+</script>
+</body>
+</html>
