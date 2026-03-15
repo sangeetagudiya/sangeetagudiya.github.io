@@ -70,34 +70,32 @@ const DB = window.DB = (() => {
     if ('mapValue'     in v) { const o={}; for(const k in (v.mapValue.fields||{})) o[k]=fromFS(v.mapValue.fields[k]); return o; }
     return null;
   }
-  async function _fsSet(path, data) {
-    const res = await fetch(`${FS}/${path}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ fields: objToFS(data) })
-    });
-    if (!res.ok) throw new Error(`FS SET failed ${res.status}`);
+  function fsUrl(p){return `${FS}/${p}?key=${AKEY}`;}
+  function fsListUrl(c){return `${FS}/${c}?key=${AKEY}&pageSize=300`;}
+  async function _fsSet(path,data){
+    const res=await fetch(fsUrl(path),{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({fields:objToFS(data)})});
+    if(!res.ok)throw new Error('FS SET failed '+res.status);
   }
-  async function _fsDel(path) {
-    const res = await fetch(`${FS}/${path}`, { method: 'DELETE' });
-    if (!res.ok && res.status !== 404) throw new Error(`FS DEL failed ${res.status}`);
+  async function _fsDel(path){
+    const res=await fetch(fsUrl(path),{method:'DELETE'});
+    if(!res.ok&&res.status!==404)throw new Error('FS DEL failed '+res.status);
   }
-  async function _fsGet(path) {
-    try {
-      const res = await fetch(`${FS}/${path}`);
-      if (res.status === 404) return null;
-      if (!res.ok) throw new Error(`FS GET failed ${res.status}`);
-      const doc = await res.json();
-      return doc.fields ? fromFS({ mapValue: { fields: doc.fields } }) : null;
-    } catch(e) { return null; }
+  async function _fsGet(path){
+    try{
+      const res=await fetch(fsUrl(path));
+      if(res.status===404)return null;
+      if(!res.ok)throw new Error('FS GET failed '+res.status);
+      const doc=await res.json();
+      return doc.fields?fromFS({mapValue:{fields:doc.fields}}):null;
+    }catch(e){return null;}
   }
-  async function _fsList(col) {
-    try {
-      const res = await fetch(`${FS}/${col}`);
-      if (!res.ok) return [];
-      const json = await res.json();
-      return (json.documents||[]).map(d => ({ id: d.name.split('/').pop(), ...fromFS({ mapValue: { fields: d.fields||{} } }) }));
-    } catch(e) { return []; }
+  async function _fsList(col){
+    try{
+      const res=await fetch(fsListUrl(col));
+      if(!res.ok)return[];
+      const json=await res.json();
+      return(json.documents||[]).map(d=>({id:d.name.split('/').pop(),...fromFS({mapValue:{fields:d.fields||{}}})}));
+    }catch(e){return[];}
   }
 
   // Safe firebase write (with queue fallback)
