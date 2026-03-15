@@ -113,9 +113,9 @@ const DB = window.DB = (() => {
   // ── AUTH ──────────────────────────────────────────────────
   function getCreds()      { return ls('sp_creds') || DCREDS; }
   function saveCreds(u, p) { lsSet('sp_creds', { username:u, password:p }); }
-  function isLoggedIn()    { return !!sessionStorage.getItem('sp_auth'); }
-  function setLoggedIn()   { sessionStorage.setItem('sp_auth', '1'); }
-  function logout()        { sessionStorage.removeItem('sp_auth'); }
+  function isLoggedIn()    { return !!localStorage.getItem('sp_auth'); }
+  function setLoggedIn()   { localStorage.setItem('sp_auth', '1'); }
+  function logout()        { localStorage.removeItem('sp_auth'); localStorage.removeItem('vs_selected_class'); }
   function getPin()        { return localStorage.getItem('sp_pin') || '58690'; }
   function setPin(p)       { localStorage.setItem('sp_pin', p); }
   function getTheme()      { return localStorage.getItem('sp_theme') || 'light'; }
