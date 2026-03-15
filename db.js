@@ -1,138 +1,225 @@
 /**
- * ╔══════════════════════════════════════════════════════╗
- *  VIDYA SETU — Data Service Layer  (v1 · localStorage)
- *  ─────────────────────────────────────────────────────
- *  To switch to Firebase / Google Sheets later:
- *  Replace the functions below with Firebase SDK calls.
- *  The rest of the app (attendance.html, students.html)
- *  does NOT need to change — it only calls these methods.
- * ╚══════════════════════════════════════════════════════╝
+ * ╔══════════════════════════════════════════════════════════╗
+ *  VIDYAM — Data Service Layer
+ *  Primary:  Google Sheets (singhmohal@gmail.com)
+ *  Fallback: localStorage (works offline, auto-syncs)
+ * ╚══════════════════════════════════════════════════════════╝
  */
 
 const DB = window.DB = (() => {
 
-  // ── KEYS ──────────────────────────────────────────────
-  const K = {
-    CREDS:    'vs_creds',
-    CLASSES:  'vs_classes',     // { classId: { name, students:[] } }
-    ATTEND:   'vs_attendance',  // { "classId|date": { morning:{i:P/A}, lunch:{i:P/A} } }
-    PROFILES: 'vs_profiles',    // [ { id, classId, name, ...fields } ]
-    THEME:    'vs_theme',
-    AUTH:     'vs_auth',        // sessionStorage
-  };
+  // ── CONFIG ────────────────────────────────────────────────
+  const API = 'https://script.google.com/macros/s/AKfycbz5eWyW7S2Bsq2qef_FyBCZtEM1cJywqmFL___LTi5CKmYV-7U617YyYS1PEC1D9iQV/exec';
 
+  const CLASS_ORDER   = ['class6','class7','class8','class9','class10'];
   const CLASSES_DEFAULT = {
-    'class6':  { name: 'Class 6',  students: [] },
-    'class7':  { name: 'Class 7',  students: [] },
-    'class8':  { name: 'Class 8',  students: [] },
-    'class9':  { name: 'Class 9',  students: [] },
-    'class10': { name: 'Class 10', students: [] },
+    class6:  { name: 'Class 6',  students: [] },
+    class7:  { name: 'Class 7',  students: [] },
+    class8:  { name: 'Class 8',  students: [] },
+    class9:  { name: 'Class 9',  students: [] },
+    class10: { name: 'Class 10', students: [] },
   };
-
   const CREDS_DEFAULT = { username: 'Devasangeeta', password: 'sangeeta@99' };
 
-  // ── HELPERS ───────────────────────────────────────────
-  function ls(key)        { try { return JSON.parse(localStorage.getItem(key)); } catch(e) { return null; } }
-  function lsSet(key, v)  { localStorage.setItem(key, JSON.stringify(v)); }
+  // ── LOCAL STORAGE HELPERS ─────────────────────────────────
+  function ls(k)       { try { return JSON.parse(localStorage.getItem(k)); } catch(e) { return null; } }
+  function lsSet(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch(e) {} }
 
-  // ── AUTH ──────────────────────────────────────────────
-  function getCreds()           { return ls(K.CREDS) || CREDS_DEFAULT; }
-  function saveCreds(u, p)      { lsSet(K.CREDS, { username: u, password: p }); }
-  function isLoggedIn()         { return !!sessionStorage.getItem(K.AUTH); }
-  function setLoggedIn()        { sessionStorage.setItem(K.AUTH, '1'); }
-  function logout()             { sessionStorage.removeItem(K.AUTH); }
+  // ── OFFLINE QUEUE ─────────────────────────────────────────
+  // Any write that fails while offline gets queued and retried
+  function enqueue(action, payload) {
+    const q = ls('vs_sync_queue') || [];
+    q.push({ action, payload, ts: Date.now() });
+    lsSet('vs_sync_queue', q);
+  }
+  async function flushQueue() {
+    const q = ls('vs_sync_queue') || [];
+    if (!q.length) return;
+    const remaining = [];
+    for (const item of q) {
+      try {
+        await apiPost(item.action, item.payload);
+      } catch(e) {
+        remaining.push(item);
+      }
+    }
+    lsSet('vs_sync_queue', remaining);
+  }
 
-  // ── CLASSES & STUDENTS ────────────────────────────────
-  function getClasses()         { return ls(K.CLASSES) || { ...CLASSES_DEFAULT }; }
-  function saveClasses(data)    { lsSet(K.CLASSES, data); }
+  // ── API HELPERS ───────────────────────────────────────────
+  async function apiGet(action, params = {}) {
+    const qs = new URLSearchParams({ action, ...params }).toString();
+    const res = await fetch(`${API}?${qs}`);
+    const json = await res.json();
+    if (!json.success) throw new Error(json.data?.error || 'API error');
+    return json.data;
+  }
 
-  function getClassIds()        { return Object.keys(getClasses()); }
+  async function apiPost(action, body = {}) {
+    const res = await fetch(API, {
+      method: 'POST',
+      body: JSON.stringify({ action, ...body }),
+    });
+    const json = await res.json();
+    if (!json.success) throw new Error(json.data?.error || 'API error');
+    return json.data;
+  }
 
+  function isOnline() { return navigator.onLine; }
+
+  // Flush queue whenever connection is restored
+  window.addEventListener('online', () => {
+    flushQueue();
+  });
+
+  // ── AUTH ──────────────────────────────────────────────────
+  function getCreds()        { return ls('vs_creds') || CREDS_DEFAULT; }
+  function saveCreds(u, p)   { lsSet('vs_creds', { username: u, password: p }); }
+  function isLoggedIn()      { return !!sessionStorage.getItem('vs_auth'); }
+  function setLoggedIn()     { sessionStorage.setItem('vs_auth', '1'); }
+  function logout()          { sessionStorage.removeItem('vs_auth'); }
+
+  // ── THEME ─────────────────────────────────────────────────
+  function getTheme()        { return localStorage.getItem('vs_theme') || 'light'; }
+  function setTheme(t)       { localStorage.setItem('vs_theme', t); }
+
+  // ── CLASSES (local only — structure doesn't change) ───────
+  function getClasses()      { return ls('vs_classes') || { ...CLASSES_DEFAULT }; }
+  function _saveClasses(c)   { lsSet('vs_classes', c); }
+
+  // ── STUDENTS ──────────────────────────────────────────────
   function getStudents(classId) {
     const c = getClasses();
     return (c[classId] && c[classId].students) ? c[classId].students : [];
   }
 
-  function addStudent(classId, name) {
+  async function addStudent(classId, name) {
     const c = getClasses();
     if (!c[classId]) return false;
     if (c[classId].students.find(s => s.toLowerCase() === name.toLowerCase())) return false;
     c[classId].students.push(name);
-    saveClasses(c);
+    _saveClasses(c);
+    // Sync to Google Sheets
+    const students = c[classId].students;
+    try {
+      await apiPost('saveStudents', { classId, students });
+    } catch(e) {
+      enqueue('saveStudents', { classId, students });
+    }
     return true;
   }
 
-  function removeStudent(classId, idx) {
+  async function removeStudent(classId, idx) {
     const c = getClasses();
     if (!c[classId]) return;
     c[classId].students.splice(idx, 1);
-    saveClasses(c);
-  }
-
-  // ── ATTENDANCE ────────────────────────────────────────
-  function getAttendance(classId, date) {
-    const all = ls(K.ATTEND) || {};
-    return all[`${classId}|${date}`] || { morning: {}, lunch: {} };
-  }
-
-  function setAttendanceMark(classId, date, session, studentIdx, value) {
-    const all = ls(K.ATTEND) || {};
-    const key = `${classId}|${date}`;
-    if (!all[key]) all[key] = { morning: {}, lunch: {} };
-    // Toggle off if same value
-    if (all[key][session][studentIdx] === value) {
-      delete all[key][session][studentIdx];
-    } else {
-      all[key][session][studentIdx] = value;
+    _saveClasses(c);
+    const students = c[classId].students;
+    try {
+      await apiPost('saveStudents', { classId, students });
+    } catch(e) {
+      enqueue('saveStudents', { classId, students });
     }
-    lsSet(K.ATTEND, all);
   }
 
-  function markAllAttendance(classId, date, session, value, count) {
-    const all = ls(K.ATTEND) || {};
-    const key = `${classId}|${date}`;
-    if (!all[key]) all[key] = { morning: {}, lunch: {} };
-    for (let i = 0; i < count; i++) all[key][session][i] = value;
-    lsSet(K.ATTEND, all);
+  // Load students from Sheets into localStorage (call on app start)
+  async function syncStudentsFromSheets() {
+    try {
+      const c = getClasses();
+      for (const classId of CLASS_ORDER) {
+        const data = await apiGet('getStudents', { classId });
+        if (data && Array.isArray(data.students)) {
+          c[classId].students = data.students;
+        }
+      }
+      _saveClasses(c);
+    } catch(e) {
+      // offline — use local data
+    }
+  }
+
+  // ── ATTENDANCE ────────────────────────────────────────────
+  function _attKey(classId, date) { return `vs_att_${classId}_${date}`; }
+
+  function getAttendance(classId, date) {
+    return ls(_attKey(classId, date)) || { morning: {}, lunch: {} };
+  }
+
+  async function setAttendanceMark(classId, date, session, studentIdx, value) {
+    const rec = getAttendance(classId, date);
+    if (rec[session][studentIdx] === value) {
+      delete rec[session][studentIdx];
+    } else {
+      rec[session][studentIdx] = value;
+    }
+    lsSet(_attKey(classId, date), rec);
+    // Sync session to Sheets
+    try {
+      await apiPost('saveAttendance', { classId, date, session, data: rec[session] });
+    } catch(e) {
+      enqueue('saveAttendance', { classId, date, session, data: rec[session] });
+    }
+  }
+
+  async function markAllAttendance(classId, date, session, value, count) {
+    const rec = getAttendance(classId, date);
+    for (let i = 0; i < count; i++) rec[session][i] = value;
+    lsSet(_attKey(classId, date), rec);
+    try {
+      await apiPost('saveAttendance', { classId, date, session, data: rec[session] });
+    } catch(e) {
+      enqueue('saveAttendance', { classId, date, session, data: rec[session] });
+    }
   }
 
   function getDatesWithAttendance(classId) {
-    const all = ls(K.ATTEND) || {};
-    return Object.keys(all)
-      .filter(k => k.startsWith(classId + '|') && (
-        Object.keys(all[k].morning || {}).length > 0 ||
-        Object.keys(all[k].lunch || {}).length > 0
-      ))
-      .map(k => k.split('|')[1]);
+    // Read from localStorage keys
+    const dates = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && key.startsWith(`vs_att_${classId}_`)) {
+        const date = key.replace(`vs_att_${classId}_`, '');
+        const rec  = ls(key) || {};
+        if (Object.keys(rec.morning || {}).length > 0 || Object.keys(rec.lunch || {}).length > 0) {
+          dates.push(date);
+        }
+      }
+    }
+    return dates.sort();
   }
 
   function getAttendanceReport(classId) {
-    const all = ls(K.ATTEND) || {};
     const students = getStudents(classId);
-    const dates = Object.keys(all)
-      .filter(k => k.startsWith(classId + '|'))
-      .map(k => k.split('|')[1])
-      .sort();
-
+    const dates    = getDatesWithAttendance(classId);
     return students.map((name, i) => {
-      let mP=0, mA=0, lP=0, lA=0;
+      let mP=0,mA=0,lP=0,lA=0;
       dates.forEach(d => {
-        const rec = all[`${classId}|${d}`] || { morning:{}, lunch:{} };
-        if (rec.morning[i] === 'P') mP++; else if (rec.morning[i] === 'A') mA++;
-        if (rec.lunch[i]   === 'P') lP++; else if (rec.lunch[i]   === 'A') lA++;
+        const rec = getAttendance(classId, d);
+        if (rec.morning[i]==='P') mP++; else if (rec.morning[i]==='A') mA++;
+        if (rec.lunch[i]==='P')   lP++; else if (rec.lunch[i]==='A')   lA++;
       });
       return { name, mP, mA, lP, lA, totalDays: dates.length };
     });
   }
 
-  // ── STUDENT PROFILES ──────────────────────────────────
+  // Load attendance for a date from Sheets (called when switching date)
+  async function syncAttendanceFromSheets(classId, date) {
+    try {
+      const data = await apiGet('getAttendance', { classId, date });
+      if (data) lsSet(_attKey(classId, date), data);
+    } catch(e) {
+      // use local
+    }
+  }
+
+  // ── PROFILES ─────────────────────────────────────────────
   function getProfiles(classId) {
-    const all = ls(K.PROFILES) || [];
+    const all = ls('vs_profiles') || [];
     return classId ? all.filter(p => p.classId === classId) : all;
   }
 
-  function saveProfile(profile) {
-    const all = ls(K.PROFILES) || [];
+  async function saveProfile(profile) {
+    const all = ls('vs_profiles') || [];
     if (profile.id) {
       const idx = all.findIndex(p => p.id === profile.id);
       if (idx > -1) all[idx] = profile; else all.push(profile);
@@ -140,33 +227,65 @@ const DB = window.DB = (() => {
       profile.id = 'stu_' + Date.now() + '_' + Math.random().toString(36).slice(2,6);
       all.push(profile);
     }
-    lsSet(K.PROFILES, all);
+    lsSet('vs_profiles', all);
+    try {
+      await apiPost('saveProfile', { profile });
+    } catch(e) {
+      enqueue('saveProfile', { profile });
+    }
     return profile;
   }
 
-  function deleteProfile(id) {
-    const all = (ls(K.PROFILES) || []).filter(p => p.id !== id);
-    lsSet(K.PROFILES, all);
+  async function deleteProfile(id) {
+    const all = (ls('vs_profiles') || []).filter(p => p.id !== id);
+    lsSet('vs_profiles', all);
+    try {
+      await apiPost('deleteProfile', { id });
+    } catch(e) {
+      enqueue('deleteProfile', { id });
+    }
   }
 
-  // ── THEME ─────────────────────────────────────────────
-  function getTheme()       { return localStorage.getItem(K.THEME) || 'light'; }
-  function setTheme(t)      { localStorage.setItem(K.THEME, t); }
+  async function syncProfilesFromSheets() {
+    try {
+      const data = await apiGet('getProfiles', {});
+      if (data && Array.isArray(data.profiles)) {
+        lsSet('vs_profiles', data.profiles);
+      }
+    } catch(e) {
+      // use local
+    }
+  }
 
-  // ── PUBLIC API ────────────────────────────────────────
+  // ── PING (test connection) ─────────────────────────────────
+  async function ping() {
+    try {
+      const data = await apiGet('ping');
+      return data;
+    } catch(e) {
+      return { ok: false, error: e.toString() };
+    }
+  }
+
+  // ── PUBLIC API ────────────────────────────────────────────
   return {
     // Auth
     getCreds, saveCreds, isLoggedIn, setLoggedIn, logout,
-    // Classes
-    getClasses, getClassIds, getStudents, addStudent, removeStudent,
-    // Attendance
-    getAttendance, setAttendanceMark, markAllAttendance,
-    getDatesWithAttendance, getAttendanceReport,
-    // Profiles
-    getProfiles, saveProfile, deleteProfile,
     // Theme
     getTheme, setTheme,
-    // Class list (ordered)
-    CLASS_ORDER: ['class6','class7','class8','class9','class10'],
+    // Classes
+    getClasses, CLASS_ORDER,
+    // Students
+    getStudents, addStudent, removeStudent, syncStudentsFromSheets,
+    // Attendance
+    getAttendance, setAttendanceMark, markAllAttendance,
+    getDatesWithAttendance, getAttendanceReport, syncAttendanceFromSheets,
+    // Profiles
+    getProfiles, saveProfile, deleteProfile, syncProfilesFromSheets,
+    // Sync
+    flushQueue, ping,
+    // Online check
+    isOnline,
   };
+
 })();
