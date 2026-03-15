@@ -563,7 +563,7 @@ document.addEventListener('click',e=>{
 });
 
 // ── STATE ─────────────────────────────────────────────────
-let curClass=sessionStorage.getItem('vs_selected_class')||DB.CLASS_ORDER[0];
+let curClass=localStorage.getItem('vs_selected_class')||DB.CLASS_ORDER[0];
 let curDate=todayStr(),calY,calM,editId=null;
 let pie1=null,bar1=null,pie2=null,bar2=null;
 let taskTimers=[];
@@ -590,12 +590,12 @@ updateClock();setInterval(updateClock,1000);
 // NIGHT TOAST
 (function(){
   const h=new Date().getHours();
-  if(h>=17&&h<19&&DB.getTheme()==='light'&&!sessionStorage.getItem('sp_nt_dismissed')){
+  if(h>=17&&h<19&&DB.getTheme()==='light'&&!localStorage.getItem('sp_nt_dismissed')){
     setTimeout(()=>document.getElementById('night-toast').classList.add('show'),4000);
   }
 })();
 function switchDark(){applyTheme('dark');dismissNT();}
-function dismissNT(){document.getElementById('night-toast').classList.remove('show');sessionStorage.setItem('sp_nt_dismissed','1');}
+function dismissNT(){document.getElementById('night-toast').classList.remove('show');localStorage.setItem('sp_nt_dismissed','1');}
 
 // ── CLASS BAR ─────────────────────────────────────────────
 function buildClassBar(){
