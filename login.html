@@ -338,7 +338,7 @@ function checkPin(){
     const ws=document.getElementById('welcome-screen');
     ws.classList.add('show');
     document.getElementById('wc-sub').textContent=`Opening ${DB.getClasses()[selClass].name} register...`;
-    setTimeout(()=>{sessionStorage.setItem('vs_selected_class',selClass);window.location.href='attendance.html';},2200);
+    setTimeout(()=>{localStorage.setItem('vs_selected_class',selClass);window.location.href='attendance.html';},2200);
   } else {
     pinEntry='';updateDots();
     const e=document.getElementById('pin-err');e.classList.remove('show');void e.offsetWidth;e.classList.add('show');
