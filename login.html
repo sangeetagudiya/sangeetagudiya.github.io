@@ -1,1 +1,216 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login — Vidya Setu</title>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root { --transition: background .3s, color .3s, border-color .3s; }
 
+[data-theme="light"] {
+  --bg: #f2ede4; --bg2: #ede7db; --surface: #e8e1d5;
+  --text: #1a1712; --text2: #5c5649; --text3: #9a9080;
+  --warm: #7a5c38; --accent: #c96b3a;
+  --border: rgba(0,0,0,0.09); --border2: rgba(0,0,0,0.15);
+  --card: #fff8f0; --input-bg: #ede7db;
+  --nav-bg: rgba(242,237,228,0.92);
+  --btn-bg: #1a1712; --btn-text: #f2ede4;
+  --err-bg: #fff0f0; --err-border: #f5c0c0; --err-text: #b91c1c;
+  --toggle-bg: #d4c9b5;
+}
+[data-theme="dark"] {
+  --bg: #0f0f0e; --bg2: #1a1915; --surface: #252420;
+  --text: #f0ebe0; --text2: #9a9488; --text3: #6b665e;
+  --warm: #c4a882; --accent: #d4784a;
+  --border: rgba(255,255,255,0.07); --border2: rgba(255,255,255,0.14);
+  --card: #1e1c18; --input-bg: #252420;
+  --nav-bg: rgba(15,15,14,0.9);
+  --btn-bg: #f0ebe0; --btn-text: #0f0f0e;
+  --err-bg: #2a1515; --err-border: #5a2020; --err-text: #f87171;
+  --toggle-bg: #3a3830;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; transition: var(--transition); }
+
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 52px;
+  background: var(--nav-bg); backdrop-filter: blur(18px);
+  border-bottom: 1px solid var(--border); transition: var(--transition);
+}
+.nav-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+.nav-logo-mark { width: 32px; height: 32px; background: var(--text); border-radius: 7px; display: flex; align-items: center; justify-content: center; font-size: 16px; transition: background .3s; }
+.nav-logo-text { font-family: 'Lora', serif; font-size: 17px; color: var(--text); transition: color .3s; }
+.nav-right { display: flex; align-items: center; gap: 10px; }
+.theme-toggle { width: 34px; height: 34px; background: var(--toggle-bg); border: 1px solid var(--border2); border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 15px; transition: background .3s; }
+.back-btn { font-size: 14px; color: var(--text2); text-decoration: none; font-weight: 500; transition: color .2s; }
+.back-btn:hover { color: var(--text); }
+
+/* MAIN */
+main { flex: 1; display: flex; align-items: center; justify-content: center; padding: 100px 20px 40px; }
+.login-box {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 20px; padding: 48px 44px;
+  width: 100%; max-width: 420px;
+  box-shadow: 0 4px 32px rgba(0,0,0,0.08);
+  transition: var(--transition);
+  animation: fadeUp .5s ease both;
+}
+.login-top { text-align: center; margin-bottom: 36px; }
+.login-avatar {
+  width: 64px; height: 64px; border-radius: 14px;
+  background: var(--bg2); border: 1px solid var(--border2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 30px; margin: 0 auto 18px;
+}
+.login-top h1 { font-family: 'Lora', serif; font-size: 26px; font-weight: 400; color: var(--text); margin-bottom: 6px; }
+.login-top p { font-size: 14px; color: var(--text3); line-height: 1.6; }
+
+.field { margin-bottom: 18px; }
+.field label { display: block; font-size: 12px; font-weight: 600; letter-spacing: 0.8px; text-transform: uppercase; color: var(--text3); margin-bottom: 8px; }
+.input-wrap { position: relative; }
+.field input {
+  width: 100%; background: var(--input-bg); border: 1px solid var(--border2);
+  border-radius: 9px; padding: 12px 14px;
+  font-family: 'Inter', sans-serif; font-size: 15px; color: var(--text);
+  transition: border-color .2s, background .3s, color .3s;
+  outline: none;
+}
+.field input:focus { border-color: var(--warm); box-shadow: 0 0 0 3px rgba(122,92,56,0.1); }
+.pw-eye { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; font-size: 17px; color: var(--text3); padding: 4px; }
+
+.login-btn {
+  width: 100%; background: var(--btn-bg); color: var(--btn-text);
+  border: none; border-radius: 10px; padding: 14px;
+  font-family: 'Inter', sans-serif; font-size: 15px; font-weight: 600;
+  cursor: pointer; margin-top: 6px;
+  transition: opacity .2s, background .3s, color .3s;
+}
+.login-btn:hover { opacity: 0.82; }
+.login-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.error-box {
+  background: var(--err-bg); border: 1px solid var(--err-border);
+  color: var(--err-text); border-radius: 9px;
+  padding: 11px 14px; font-size: 13px; font-weight: 500;
+  margin-top: 14px; display: none; text-align: center;
+  transition: var(--transition);
+}
+.error-box.show { display: block; animation: shake .35s ease; }
+.attempts-msg { font-size: 12px; color: var(--err-text); text-align: center; margin-top: 8px; display: none; font-weight: 600; }
+
+@keyframes fadeUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+@keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-5px)} 75%{transform:translateX(5px)} }
+
+@media(max-width:520px){ nav{padding:14px 18px;} .login-box{padding:36px 22px;} }
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="index.html">
+    <div class="nav-logo-mark">🏫</div>
+    <span class="nav-logo-text">Vidya Setu</span>
+  </a>
+  <div class="nav-right">
+    <a class="back-btn" href="index.html">← Back to Home</a>
+    <button class="theme-toggle" id="themeBtn" onclick="toggleTheme()">🌙</button>
+  </div>
+</nav>
+
+<main>
+  <div class="login-box">
+    <div class="login-top">
+      <div class="login-avatar">🔐</div>
+      <h1>Teacher Login</h1>
+      <p>Enter your credentials to access the class register</p>
+    </div>
+
+    <div class="field">
+      <label>Username</label>
+      <input type="text" id="u" placeholder="Enter username" autocomplete="off"
+        onkeydown="if(event.key==='Enter')document.getElementById('p').focus()">
+    </div>
+
+    <div class="field">
+      <label>Password</label>
+      <div class="input-wrap">
+        <input type="password" id="p" placeholder="Enter password" autocomplete="off"
+          onkeydown="if(event.key==='Enter')doLogin()">
+        <button class="pw-eye" id="eyeBtn" onclick="togglePw()">👁</button>
+      </div>
+    </div>
+
+    <button class="login-btn" id="loginBtn" onclick="doLogin()">Login →</button>
+    <div class="error-box" id="errBox">Incorrect username or password</div>
+    <div class="attempts-msg" id="attMsg"></div>
+  </div>
+</main>
+
+<script>
+const CRED_KEY = 'vs_creds';
+const DEFAULT = { username: 'Devasangeeta', password: 'sangeeta@99' };
+const MAX = 5;
+let tries = 0;
+
+function getCreds() {
+  try { return JSON.parse(localStorage.getItem(CRED_KEY)) || DEFAULT; }
+  catch(e) { return DEFAULT; }
+}
+
+function doLogin() {
+  const u = document.getElementById('u').value.trim();
+  const p = document.getElementById('p').value;
+  const creds = getCreds();
+  const err = document.getElementById('errBox');
+  const attMsg = document.getElementById('attMsg');
+  const btn = document.getElementById('loginBtn');
+
+  if (u === creds.username && p === creds.password) {
+    sessionStorage.setItem('vs_auth', '1');
+    btn.textContent = 'Opening…';
+    btn.disabled = true;
+    setTimeout(() => window.location.href = 'attendance.html', 400);
+  } else {
+    tries++;
+    err.classList.remove('show');
+    void err.offsetWidth;
+    err.classList.add('show');
+    if (tries >= 3) {
+      attMsg.style.display = 'block';
+      attMsg.textContent = `⚠ ${MAX - tries} attempt${MAX - tries !== 1 ? 's' : ''} remaining`;
+    }
+    if (tries >= MAX) {
+      err.textContent = '🔒 Too many failed attempts. Please refresh the page.';
+      ['u','p'].forEach(id => document.getElementById(id).disabled = true);
+      btn.disabled = true;
+    }
+  }
+}
+
+function togglePw() {
+  const inp = document.getElementById('p');
+  const eye = document.getElementById('eyeBtn');
+  inp.type = inp.type === 'password' ? 'text' : 'password';
+  eye.textContent = inp.type === 'password' ? '👁' : '🙈';
+}
+
+// Theme
+const root = document.documentElement;
+const btn = document.getElementById('themeBtn');
+const saved = localStorage.getItem('vs_theme') || 'light';
+applyTheme(saved);
+function applyTheme(t) {
+  root.setAttribute('data-theme', t);
+  btn.textContent = t === 'dark' ? '☀️' : '🌙';
+  localStorage.setItem('vs_theme', t);
+}
+function toggleTheme() {
+  applyTheme(root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+}
+</script>
+</body>
+</html>
