@@ -1,1 +1,401 @@
 
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Students — Vidya Setu</title>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--tr:background .3s,color .3s,border-color .3s;}
+[data-theme="light"]{
+  --bg:#f2ede4;--bg2:#ede7db;--bg3:#e6dfd3;
+  --text:#1a1712;--text2:#5c5649;--text3:#9a9080;
+  --warm:#7a5c38;--accent:#c96b3a;
+  --border:rgba(0,0,0,0.09);--border2:rgba(0,0,0,0.15);
+  --card:#fff8f0;--input-bg:#ede7db;
+  --nav-bg:rgba(242,237,228,0.93);
+  --btn-bg:#1a1712;--btn-text:#f2ede4;
+  --green:#166534;--green-bg:#dcfce7;--green-bd:#86efac;
+  --red:#b91c1c;--red-bg:#fee2e2;--red-bd:#fca5a5;
+  --blue:#1d4ed8;--blue-bg:#dbeafe;--blue-bd:#93c5fd;
+  --toggle-bg:#d4c9b5;--shadow:0 2px 16px rgba(0,0,0,0.07);
+}
+[data-theme="dark"]{
+  --bg:#0f0f0e;--bg2:#1a1915;--bg3:#252420;
+  --text:#f0ebe0;--text2:#9a9488;--text3:#6b665e;
+  --warm:#c4a882;--accent:#d4784a;
+  --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.14);
+  --card:#1e1c18;--input-bg:#252420;
+  --nav-bg:rgba(15,15,14,0.92);
+  --btn-bg:#f0ebe0;--btn-text:#0f0f0e;
+  --green:#4ade80;--green-bg:rgba(74,222,128,0.1);--green-bd:rgba(74,222,128,0.25);
+  --red:#f87171;--red-bg:rgba(248,113,113,0.1);--red-bd:rgba(248,113,113,0.25);
+  --blue:#60a5fa;--blue-bg:rgba(96,165,250,0.1);--blue-bd:rgba(96,165,250,0.25);
+  --toggle-bg:#3a3830;--shadow:0 2px 16px rgba(0,0,0,0.3);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;transition:var(--tr);}
+
+/* NAV */
+nav{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:13px 28px;background:var(--nav-bg);backdrop-filter:blur(18px);border-bottom:1px solid var(--border);transition:var(--tr);gap:10px;flex-wrap:wrap;}
+.nav-logo{display:flex;align-items:center;gap:8px;text-decoration:none;}
+.nav-mark{width:30px;height:30px;background:var(--text);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:15px;transition:background .3s;}
+.nav-title{font-family:'Lora',serif;font-size:16px;color:var(--text);transition:color .3s;}
+.nav-r{display:flex;align-items:center;gap:8px;}
+.theme-toggle{width:32px;height:32px;background:var(--toggle-bg);border:1px solid var(--border2);border-radius:7px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;}
+.back-btn{font-size:13px;font-weight:500;color:var(--text2);background:none;border:1px solid var(--border2);border-radius:7px;padding:6px 12px;cursor:pointer;font-family:inherit;text-decoration:none;transition:color .2s;}
+.back-btn:hover{color:var(--text);}
+
+/* MAIN */
+.main{max-width:980px;margin:0 auto;padding:24px 16px;}
+
+/* TOP BAR */
+.top-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:20px;}
+.top-bar-title{font-family:'Lora',serif;font-size:22px;font-weight:400;color:var(--text);}
+.top-bar-title span{font-size:13px;color:var(--text3);font-family:'Inter',sans-serif;font-weight:400;margin-left:8px;}
+.search-wrap{position:relative;flex:1;max-width:280px;}
+.search-wrap input{width:100%;background:var(--card);border:1px solid var(--border2);border-radius:9px;padding:9px 14px 9px 36px;font-family:'Inter',sans-serif;font-size:13px;color:var(--text);outline:none;transition:var(--tr);}
+.search-wrap input:focus{border-color:var(--warm);}
+.search-icon{position:absolute;left:11px;top:50%;transform:translateY(-50%);font-size:14px;pointer-events:none;}
+.btn-add-new{background:var(--btn-bg);color:var(--btn-text);border:none;border-radius:9px;padding:9px 18px;cursor:pointer;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;transition:opacity .2s,background .3s,color .3s;white-space:nowrap;}
+.btn-add-new:hover{opacity:.82;}
+
+/* STUDENT CARDS GRID */
+.stu-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;margin-bottom:20px;}
+.stu-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px;box-shadow:var(--shadow);transition:var(--tr),border-color .2s;}
+.stu-card:hover{border-color:var(--border2);}
+.stu-card-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px;}
+.stu-avatar{width:44px;height:44px;border-radius:10px;background:var(--bg2);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-family:'Lora',serif;font-size:17px;font-weight:500;color:var(--warm);flex-shrink:0;}
+.stu-card-actions{display:flex;gap:6px;}
+.btn-edit{background:var(--blue-bg);border:1px solid var(--blue-bd);color:var(--blue);border-radius:7px;padding:5px 10px;cursor:pointer;font-size:12px;font-weight:600;font-family:inherit;}
+.btn-edit:hover{opacity:.8;}
+.btn-del{background:var(--red-bg);border:1px solid var(--red-bd);color:var(--red);border-radius:7px;padding:5px 10px;cursor:pointer;font-size:12px;font-weight:600;font-family:inherit;}
+.btn-del:hover{background:var(--red);color:#fff;}
+.stu-card-name{font-family:'Lora',serif;font-size:16px;font-weight:400;color:var(--text);margin-bottom:2px;}
+.stu-serial{font-size:11px;color:var(--text3);font-weight:500;}
+.stu-fields{display:flex;flex-direction:column;gap:6px;margin-top:10px;}
+.stu-field{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;font-size:12px;}
+.stu-field-label{color:var(--text3);font-weight:600;letter-spacing:.3px;white-space:nowrap;flex-shrink:0;}
+.stu-field-val{color:var(--text2);text-align:right;word-break:break-word;}
+.stu-field-val.empty{color:var(--text3);font-style:italic;}
+
+/* MODAL OVERLAY */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:500;display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity .25s;}
+.modal-overlay.open{opacity:1;pointer-events:all;}
+.modal{background:var(--card);border:1px solid var(--border2);border-radius:18px;padding:32px 28px;width:100%;max-width:560px;max-height:90vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,0.2);transition:var(--tr);transform:translateY(16px);transition:transform .25s,opacity .25s,background .3s;}
+.modal-overlay.open .modal{transform:translateY(0);}
+.modal-title{font-family:'Lora',serif;font-size:20px;font-weight:400;color:var(--text);margin-bottom:24px;display:flex;align-items:center;justify-content:space-between;}
+.modal-close{background:none;border:none;cursor:pointer;font-size:18px;color:var(--text3);line-height:1;padding:2px;}
+.modal-close:hover{color:var(--text);}
+
+/* FORM */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.form-grid.full{grid-template-columns:1fr;}
+.field{display:flex;flex-direction:column;gap:6px;}
+.field.span2{grid-column:span 2;}
+.field label{font-size:11px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:var(--text3);}
+.field input,.field select{background:var(--input-bg);border:1px solid var(--border2);border-radius:8px;padding:10px 12px;font-family:'Inter',sans-serif;font-size:13px;color:var(--text);outline:none;width:100%;transition:var(--tr);}
+.field input:focus,.field select:focus{border-color:var(--warm);}
+.field select option{background:var(--bg2);color:var(--text);}
+.modal-footer{display:flex;justify-content:flex-end;gap:10px;margin-top:22px;padding-top:18px;border-top:1px solid var(--border);}
+.btn-cancel{background:none;border:1px solid var(--border2);color:var(--text2);border-radius:8px;padding:10px 18px;cursor:pointer;font-family:'Inter',sans-serif;font-size:14px;font-weight:500;}
+.btn-cancel:hover{color:var(--text);}
+.btn-submit{background:var(--btn-bg);color:var(--btn-text);border:none;border-radius:8px;padding:10px 22px;cursor:pointer;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;transition:opacity .2s,background .3s,color .3s;}
+.btn-submit:hover{opacity:.82;}
+
+/* SECTION DIVIDER */
+.form-section{font-size:11px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--warm);margin-top:6px;margin-bottom:2px;grid-column:span 2;padding-bottom:6px;border-bottom:1px solid var(--border);}
+
+/* EMPTY */
+.empty-state{text-align:center;padding:56px 20px;color:var(--text3);}
+.empty-state .ei{font-size:48px;margin-bottom:14px;}
+.empty-state p{font-size:15px;line-height:1.6;}
+
+/* TOAST */
+#toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:var(--text);color:var(--bg);padding:11px 22px;border-radius:10px;font-size:13px;font-weight:600;opacity:0;transition:opacity .3s;pointer-events:none;z-index:9999;white-space:nowrap;}
+#toast.show{opacity:1;}
+
+@media(max-width:600px){
+  .form-grid{grid-template-columns:1fr;}
+  .field.span2{grid-column:span 1;}
+  .form-section{grid-column:span 1;}
+  nav{padding:12px 16px;}
+  .modal{padding:24px 18px;}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="index.html">
+    <div class="nav-mark">🏫</div>
+    <span class="nav-title">Vidya Setu</span>
+  </a>
+  <div class="nav-r">
+    <a class="back-btn" href="attendance.html">← Register</a>
+    <button class="theme-toggle" id="themeBtn" onclick="toggleTheme()">🌙</button>
+  </div>
+</nav>
+
+<div class="main">
+
+  <div class="top-bar">
+    <div class="top-bar-title">Students <span id="stu-count"></span></div>
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input type="text" id="search" placeholder="Search by name…" oninput="renderCards()">
+    </div>
+    <button class="btn-add-new" onclick="openModal()">+ Add Student</button>
+  </div>
+
+  <div class="stu-grid" id="stu-grid"></div>
+
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal-overlay" onclick="overlayClick(event)">
+  <div class="modal">
+    <div class="modal-title">
+      <span id="modal-title-text">Add Student</span>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+
+    <div class="form-grid">
+      <div class="form-section">Basic Information</div>
+
+      <div class="field">
+        <label>Serial No.</label>
+        <input type="number" id="f-serial" placeholder="e.g. 1">
+      </div>
+      <div class="field">
+        <label>Admission No.</label>
+        <input type="text" id="f-admno" placeholder="e.g. 2024-001">
+      </div>
+
+      <div class="field span2">
+        <label>Full Name *</label>
+        <input type="text" id="f-name" placeholder="Student's full name">
+      </div>
+
+      <div class="field">
+        <label>Date of Birth</label>
+        <input type="date" id="f-dob">
+      </div>
+      <div class="field">
+        <label>Gender</label>
+        <select id="f-gender">
+          <option value="">Select</option>
+          <option>Male</option>
+          <option>Female</option>
+          <option>Other</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Admission Date</label>
+        <input type="date" id="f-admdate">
+      </div>
+      <div class="field">
+        <label>Class / Section</label>
+        <input type="text" id="f-class" placeholder="e.g. 5-A">
+      </div>
+
+      <div class="form-section">Identity</div>
+
+      <div class="field">
+        <label>Apaar ID</label>
+        <input type="text" id="f-apaar" placeholder="12-digit Apaar ID">
+      </div>
+      <div class="field">
+        <label>PAN Number</label>
+        <input type="text" id="f-pan" placeholder="e.g. ABCDE1234F">
+      </div>
+
+      <div class="form-section">Parent / Guardian Details</div>
+
+      <div class="field">
+        <label>Father's Name</label>
+        <input type="text" id="f-father" placeholder="Father's full name">
+      </div>
+      <div class="field">
+        <label>Mother's Name</label>
+        <input type="text" id="f-mother" placeholder="Mother's full name">
+      </div>
+
+      <div class="field">
+        <label>Father's Mobile</label>
+        <input type="tel" id="f-fmob" placeholder="10-digit number">
+      </div>
+      <div class="field">
+        <label>Mother's Mobile</label>
+        <input type="tel" id="f-mmob" placeholder="10-digit number">
+      </div>
+
+      <div class="form-section">Address</div>
+
+      <div class="field span2">
+        <label>Address</label>
+        <input type="text" id="f-addr" placeholder="Street / Colony / Village">
+      </div>
+      <div class="field">
+        <label>City</label>
+        <input type="text" id="f-city" placeholder="City">
+      </div>
+      <div class="field">
+        <label>Pin Code</label>
+        <input type="text" id="f-pin" placeholder="6-digit pin">
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-submit" onclick="submitForm()">Save Student</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ── AUTH ──
+if (!sessionStorage.getItem('vs_auth')) window.location.href = 'login.html';
+
+// ── DATA ──
+const STU_KEY = 'vs_students_v2';
+let students = loadStudents();
+let editId = null;
+
+function loadStudents() {
+  try { return JSON.parse(localStorage.getItem(STU_KEY)) || []; }
+  catch(e) { return []; }
+}
+function saveStudents() { localStorage.setItem(STU_KEY, JSON.stringify(students)); }
+
+// ── RENDER ──
+function renderCards() {
+  const q = document.getElementById('search').value.trim().toLowerCase();
+  const filtered = q ? students.filter(s => s.name.toLowerCase().includes(q)) : students;
+  document.getElementById('stu-count').textContent = `(${students.length} student${students.length!==1?'s':''})`;
+  const grid = document.getElementById('stu-grid');
+
+  if (!students.length) {
+    grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><div class="ei">👩‍🎓</div><p>No students yet.<br>Click <strong>+ Add Student</strong> to add the first one.</p></div>`;
+    return;
+  }
+  if (!filtered.length) {
+    grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><div class="ei">🔍</div><p>No students match "<strong>${q}</strong>"</p></div>`;
+    return;
+  }
+
+  grid.innerHTML = filtered.map(s => {
+    const initials = s.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+    const fields = [
+      ['Serial No.', s.serial || ''],
+      ['Adm. No.', s.admno || ''],
+      ['DOB', s.dob ? fmtDOB(s.dob) : ''],
+      ['Gender', s.gender || ''],
+      ['Class', s.class || ''],
+      ['Apaar ID', s.apaar || ''],
+      ['PAN', s.pan || ''],
+      ['Father', s.father || ''],
+      ['Mother', s.mother || ''],
+      ['Address', s.addr ? (s.addr+(s.city?', '+s.city:'')+(s.pin?' - '+s.pin:'')) : ''],
+    ].filter(([,v]) => v);
+
+    return `<div class="stu-card">
+      <div class="stu-card-top">
+        <div class="stu-avatar">${initials}</div>
+        <div class="stu-card-actions">
+          <button class="btn-edit" onclick="openModal('${s.id}')">Edit</button>
+          <button class="btn-del" onclick="delStudent('${s.id}')">✕</button>
+        </div>
+      </div>
+      <div class="stu-card-name">${s.name}</div>
+      <div class="stu-serial">${s.admdate ? 'Admitted '+fmtDOB(s.admdate) : 'Student'}</div>
+      <div class="stu-fields">
+        ${fields.map(([l,v])=>`<div class="stu-field"><span class="stu-field-label">${l}</span><span class="stu-field-val">${v}</span></div>`).join('')}
+        ${!fields.length ? '<div class="stu-field-val empty">No details added yet</div>' : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function fmtDOB(s) {
+  if (!s) return '';
+  const d = new Date(s+'T00:00:00');
+  return d.toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});
+}
+
+// ── MODAL ──
+function openModal(id) {
+  editId = id || null;
+  const overlay = document.getElementById('modal-overlay');
+  document.getElementById('modal-title-text').textContent = id ? 'Edit Student' : 'Add Student';
+  const fields = ['serial','admno','name','dob','gender','admdate','class','apaar','pan','father','mother','fmob','mmob','addr','city','pin'];
+
+  if (id) {
+    const s = students.find(x => x.id === id);
+    if (s) fields.forEach(f => {
+      const el = document.getElementById('f-'+f);
+      if (el) el.value = s[f] || '';
+    });
+  } else {
+    fields.forEach(f => { const el = document.getElementById('f-'+f); if(el) el.value = ''; });
+  }
+  overlay.classList.add('open');
+  setTimeout(() => document.getElementById('f-name').focus(), 200);
+}
+
+function closeModal() {
+  document.getElementById('modal-overlay').classList.remove('open');
+  editId = null;
+}
+function overlayClick(e) { if (e.target === document.getElementById('modal-overlay')) closeModal(); }
+
+function submitForm() {
+  const name = document.getElementById('f-name').value.trim();
+  if (!name) { toast('Please enter the student name'); document.getElementById('f-name').focus(); return; }
+
+  const fields = ['serial','admno','dob','gender','admdate','class','apaar','pan','father','mother','fmob','mmob','addr','city','pin'];
+  const data = { name };
+  fields.forEach(f => { data[f] = document.getElementById('f-'+f).value.trim(); });
+
+  if (editId) {
+    const idx = students.findIndex(s => s.id === editId);
+    if (idx > -1) { students[idx] = { ...students[idx], ...data }; toast('✔ Student updated'); }
+  } else {
+    data.id = 'stu_' + Date.now();
+    students.push(data);
+    toast('✔ ' + name + ' added');
+  }
+  saveStudents(); closeModal(); renderCards();
+}
+
+function delStudent(id) {
+  const s = students.find(x => x.id === id);
+  if (!s || !confirm('Remove ' + s.name + '?\n\nNote: Attendance records use a separate system.')) return;
+  students = students.filter(x => x.id !== id);
+  saveStudents(); renderCards(); toast(s.name + ' removed');
+}
+
+// ── TOAST ──
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2400);
+}
+
+// ── THEME ──
+const root = document.documentElement;
+const tBtn = document.getElementById('themeBtn');
+const saved = localStorage.getItem('vs_theme') || 'light';
+applyTheme(saved);
+function applyTheme(t){root.setAttribute('data-theme',t);tBtn.textContent=t==='dark'?'☀️':'🌙';localStorage.setItem('vs_theme',t);}
+function toggleTheme(){applyTheme(root.getAttribute('data-theme')==='dark'?'light':'dark');}
+
+// INIT
+renderCards();
+</script>
+</body>
+</html>
