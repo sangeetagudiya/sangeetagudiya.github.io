@@ -238,6 +238,51 @@ const DB = window.DB = (() => {
     return profile;
   }
 
+  // ── SYNC FROM FIREBASE (cross-device) ────────────────────
+  // Call this on app load to pull all data from Firebase into localStorage
+  async function syncFromFirebase() {
+    try {
+      // 1. Sync students for all classes
+      const c = getClasses();
+      for (const cid of CLASS_ORDER) {
+        const doc = await _fsGet(`students/${cid}`);
+        if (doc && Array.isArray(doc.students)) {
+          c[cid].students = doc.students;
+        }
+      }
+      _saveClasses(c);
+
+      // 2. Sync all profiles
+      const profiles = await _fsList('profiles');
+      if (profiles && profiles.length) {
+        // Merge with local — Firebase wins for existing records
+        const local = ls('sp_profiles') || [];
+        const merged = [...profiles];
+        // Add any local-only records not yet pushed
+        local.forEach(lp => {
+          if (!merged.find(fp => fp.id === lp.id)) merged.push(lp);
+        });
+        lsSet('sp_profiles', merged.filter(p => !p.deleted));
+      }
+
+      // 3. Sync attendance records
+      const attDocs = await _fsList('attendance');
+      if (attDocs && attDocs.length) {
+        attDocs.forEach(doc => {
+          if (doc.classId && doc.date) {
+            const key = `sp_att_${doc.classId}_${doc.date}`;
+            lsSet(key, { morning: doc.morning || {}, lunch: doc.lunch || {} });
+          }
+        });
+      }
+
+      return true;
+    } catch(e) {
+      console.warn('Sync from Firebase failed (offline?):', e);
+      return false;
+    }
+  }
+
   // ── DATA INTEGRITY CHECK ──────────────────────────────────
   // Ensures every student has a profile and no orphan profiles exist
   function runIntegrityCheck() {
@@ -283,7 +328,7 @@ const DB = window.DB = (() => {
     getClasses, getStudents, addStudent, removeStudent,
     getAtt, setMark, markAllAtt, getDatesWithAtt, getReport,
     getProfiles, saveProfile,
-    flushQueue, runIntegrityCheck,
+    flushQueue, runIntegrityCheck, syncFromFirebase,
     isOnline: () => navigator.onLine,
   };
 })();
